@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -75,6 +76,7 @@ export function LoginScreen({ navigation }: Props) {
             value={email}
             onChangeText={setEmail}
             error={errors.email}
+            leftIcon={<Ionicons name="mail-outline" size={18} color="#6B7280" />}
           />
 
           <Input
@@ -84,6 +86,7 @@ export function LoginScreen({ navigation }: Props) {
             value={senha}
             onChangeText={setSenha}
             error={errors.senha}
+            leftIcon={<Ionicons name="lock-closed-outline" size={18} color="#6B7280" />}
           />
 
           <Button

@@ -9,6 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -76,6 +77,7 @@ export function RegisterScreen({ navigation }: Props) {
           value={nome}
           onChangeText={setNome}
           error={errors.nome}
+          leftIcon={<Ionicons name="person-outline" size={18} color="#6B7280" />}
         />
 
         <Input
@@ -86,6 +88,7 @@ export function RegisterScreen({ navigation }: Props) {
           value={email}
           onChangeText={setEmail}
           error={errors.email}
+          leftIcon={<Ionicons name="mail-outline" size={18} color="#6B7280" />}
         />
 
         <Input
@@ -94,6 +97,7 @@ export function RegisterScreen({ navigation }: Props) {
           keyboardType="phone-pad"
           value={telefone}
           onChangeText={setTelefone}
+          leftIcon={<Ionicons name="call-outline" size={18} color="#6B7280" />}
         />
 
         <Input
@@ -103,6 +107,7 @@ export function RegisterScreen({ navigation }: Props) {
           value={senha}
           onChangeText={setSenha}
           error={errors.senha}
+          leftIcon={<Ionicons name="lock-closed-outline" size={18} color="#6B7280" />}
         />
 
         <Input
@@ -112,6 +117,7 @@ export function RegisterScreen({ navigation }: Props) {
           value={confirmarSenha}
           onChangeText={setConfirmarSenha}
           error={errors.confirmarSenha}
+          leftIcon={<Ionicons name="lock-closed-outline" size={18} color="#6B7280" />}
         />
 
         <Button

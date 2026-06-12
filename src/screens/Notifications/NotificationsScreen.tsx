@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { notificationService } from '../../services/notificationService';
 import { Notificacao } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -47,7 +48,7 @@ export function NotificationsScreen({ navigation }: Props) {
     <View className="flex-1 bg-dark">
       <View className="px-4 pt-14 pb-4 flex-row items-center gap-4">
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-primary font-bold text-base">←</Text>
+          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
         </TouchableOpacity>
         <Text className="text-offwhite text-xl font-bold">Notificações</Text>
       </View>
@@ -61,8 +62,8 @@ export function NotificationsScreen({ navigation }: Props) {
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         ListEmptyComponent={
           <View className="items-center py-16">
-            <Text className="text-4xl mb-3">🔔</Text>
-            <Text className="text-offwhite text-base font-bold">Nenhuma notificação</Text>
+            <Ionicons name="notifications-off-outline" size={64} color="#6B7280" />
+            <Text className="text-offwhite text-base font-bold mt-4">Nenhuma notificação</Text>
           </View>
         }
         renderItem={({ item }) => (

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
 import { BannerCarousel } from '../../components/specific/BannerCarousel';
 import { ProductCard } from '../../components/specific/ProductCard';
@@ -94,7 +95,7 @@ export function HomeScreen({ navigation }: Props) {
           onPress={() => (navigation as any).navigate('Notificacoes')}
           className="bg-dark-card p-3 rounded-full"
         >
-          <Text className="text-xl">🔔</Text>
+          <Ionicons name="notifications-outline" size={22} color="#F5F0E8" />
         </TouchableOpacity>
       </View>
 

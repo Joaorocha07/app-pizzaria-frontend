@@ -8,6 +8,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../../contexts/CartContext';
 import { marketingService } from '../../services/marketingService';
 import { Button } from '../../components/common/Button';
@@ -52,7 +53,7 @@ export function CartScreen({ navigation }: Props) {
   if (itens.length === 0) {
     return (
       <View className="flex-1 bg-dark items-center justify-center px-6">
-        <Text className="text-5xl mb-4">🛒</Text>
+        <Ionicons name="cart-outline" size={64} color="#6B7280" style={{ marginBottom: 16 }} />
         <Text className="text-offwhite text-xl font-bold mb-2">Carrinho vazio</Text>
         <Text className="text-gray-400 text-center mb-6">
           Adicione produtos ao seu carrinho para continuar
@@ -66,7 +67,7 @@ export function CartScreen({ navigation }: Props) {
     <View className="flex-1 bg-dark">
       <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-primary font-bold text-base">← Voltar</Text>
+          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
         </TouchableOpacity>
         <Text className="text-offwhite text-xl font-bold">Carrinho</Text>
         <TouchableOpacity onPress={() => Alert.alert('Limpar', 'Deseja limpar o carrinho?', [
@@ -94,7 +95,7 @@ export function CartScreen({ navigation }: Props) {
                 </Text>
               </View>
               <TouchableOpacity onPress={() => removeItem(index)} className="ml-2 p-1">
-                <Text className="text-danger text-lg">✕</Text>
+                <Ionicons name="close-circle" size={22} color="#EF4444" />
               </TouchableOpacity>
             </View>
             <View className="flex-row items-center justify-between mt-3">

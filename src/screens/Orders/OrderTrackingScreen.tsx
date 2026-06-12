@@ -2,12 +2,13 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
+import { Ionicons } from '@expo/vector-icons';
 import { orderService } from '../../services/orderService';
 import { Pedido, HistoricoStatusPedido, StatusPedido } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { OrderStatusBadge } from '../../components/specific/OrderStatusBadge';
 import { Button } from '../../components/common/Button';
-import { formatCurrency, formatDateTime } from '../../utils/helpers';
+import { formatCurrency, formatDateTime, formatOrderId } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = {
@@ -25,12 +26,14 @@ const STEP_LABELS: Record<StatusPedido, string> = {
   CANCELADO: 'Cancelado',
 };
 
-const STEP_EMOJIS: Record<StatusPedido, string> = {
-  PENDENTE: '📋',
-  PREPARANDO: '🍕',
-  ENTREGANDO: '🛵',
-  ENTREGUE: '✅',
-  CANCELADO: '❌',
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const STEP_ICONS: Record<StatusPedido, IoniconName> = {
+  PENDENTE: 'receipt-outline',
+  PREPARANDO: 'flame-outline',
+  ENTREGANDO: 'bicycle-outline',
+  ENTREGUE: 'checkmark-circle-outline',
+  CANCELADO: 'close-circle-outline',
 };
 
 export function OrderTrackingScreen({ navigation, route }: Props) {
@@ -70,10 +73,11 @@ export function OrderTrackingScreen({ navigation, route }: Props) {
   return (
     <View className="flex-1 bg-dark">
       <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Pedidos' })}>
-          <Text className="text-primary font-bold text-base">← Meus pedidos</Text>
+        <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Pedidos' })} className="flex-row items-center gap-1">
+          <Ionicons name="arrow-back" size={20} color="#8B1A1A" />
+          <Text className="text-primary font-bold">Pedidos</Text>
         </TouchableOpacity>
-        <Text className="text-offwhite font-bold">Pedido #{pedido.id}</Text>
+        <Text className="text-offwhite font-bold">Pedido {formatOrderId(pedido.id)}</Text>
         <OrderStatusBadge status={pedido.status} />
       </View>
 
@@ -95,7 +99,11 @@ export function OrderTrackingScreen({ navigation, route }: Props) {
                   <View className={`w-10 h-10 rounded-full items-center justify-center mr-3 ${
                     done ? 'bg-primary' : 'bg-dark-border'
                   }`}>
-                    <Text className="text-lg">{STEP_EMOJIS[step]}</Text>
+                    <Ionicons
+                      name={STEP_ICONS[step]}
+                      size={20}
+                      color={done ? '#F5F0E8' : '#6B7280'}
+                    />
                   </View>
                   <View className="flex-1">
                     <Text className={`font-semibold ${done ? 'text-offwhite' : 'text-gray-500'}`}>
@@ -105,7 +113,7 @@ export function OrderTrackingScreen({ navigation, route }: Props) {
                       <Text className="text-primary text-xs font-semibold">Em andamento</Text>
                     )}
                   </View>
-                  {done && <Text className="text-success text-lg">✓</Text>}
+                  {done && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
                 </View>
               );
             })}

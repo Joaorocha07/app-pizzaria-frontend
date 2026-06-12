@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:localhost)",
+      "PowerShell(try { $response = Invoke-WebRequest -Uri \"http://localhost:3333/docs/json\" -UseBasicParsing; $response.Content } catch { $_.Exception.Message })",
+      "PowerShell(try { $r = Invoke-WebRequest -Uri \"http://localhost:3333/docs/swagger-ui-init.js\" -UseBasicParsing; $r.Content | Select-String -Pattern \"url|spec\" } catch { $_.Exception.Message })",
+      "PowerShell($urls = @\\(\"http://localhost:3333/api-json\",\"http://localhost:3333/swagger-json\",\"http://localhost:3333/openapi.json\",\"http://localhost:3333/docs-json\",\"http://localhost:3333/api/docs/json\"\\); foreach \\($u in $urls\\) { try { $r = Invoke-WebRequest -Uri $u -UseBasicParsing; Write-Host \"SUCCESS: $u\"; $r.Content | Select-Object -First 500; break } catch { Write-Host \"FAIL: $u - $\\($_.Exception.Message\\)\" } })",
+      "PowerShell(Copy-Item *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
+    ]
+  }
+}

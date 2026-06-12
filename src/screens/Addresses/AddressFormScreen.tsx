@@ -9,14 +9,15 @@ import {
   Platform,
   Switch,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { userService } from '../../services/userService';
 import { searchCep } from '../../services/cepService';
-import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { Input } from '../../components/common/Input';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = {
@@ -36,39 +37,46 @@ export function AddressFormScreen({ navigation, route }: Props) {
   const [padrao, setPadrao] = useState(existing?.padrao ?? false);
   const [loading, setLoading] = useState(false);
   const [cepLoading, setCepLoading] = useState(false);
+  const [cepError, setCepError] = useState('');
+  const [cepOk, setCepOk] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  function formatCepInput(value: string) {
-    const clean = value.replace(/\D/g, '').slice(0, 8);
-    const formatted = clean.length > 5 ? `${clean.slice(0, 5)}-${clean.slice(5)}` : clean;
+  async function handleCepChange(value: string) {
+    const digits = value.replace(/\D/g, '').slice(0, 8);
+    const formatted = digits.length > 5 ? `${digits.slice(0, 5)}-${digits.slice(5)}` : digits;
     setCep(formatted);
-    if (clean.length === 8) handleCepSearch(clean);
-  }
+    setCepOk(false);
+    setCepError('');
 
-  async function handleCepSearch(cleanCep: string) {
-    setCepLoading(true);
-    setErrors((prev) => ({ ...prev, cep: '' }));
-    try {
-      const data = await searchCep(cleanCep);
-      setRua(data.rua);
-      setBairro(data.bairro);
-      setCidade(data.cidade);
-      setEstado(data.estado);
-    } catch (e: any) {
-      setErrors((prev) => ({ ...prev, cep: e.message }));
-    } finally {
-      setCepLoading(false);
+    if (digits.length === 8) {
+      setCepLoading(true);
+      try {
+        const data = await searchCep(digits);
+        setRua(data.rua);
+        setBairro(data.bairro);
+        setCidade(data.cidade);
+        setEstado(data.estado);
+        setCepOk(true);
+      } catch (e: any) {
+        setCepError(e.message);
+        setRua('');
+        setBairro('');
+        setCidade('');
+        setEstado('');
+      } finally {
+        setCepLoading(false);
+      }
     }
   }
 
   function validate(): boolean {
     const e: Record<string, string> = {};
+    if (!cep.trim()) e.cep = 'CEP obrigatório';
     if (!rua.trim()) e.rua = 'Rua obrigatória';
     if (!numero.trim()) e.numero = 'Número obrigatório';
     if (!bairro.trim()) e.bairro = 'Bairro obrigatório';
     if (!cidade.trim()) e.cidade = 'Cidade obrigatória';
     if (!estado.trim()) e.estado = 'Estado obrigatório';
-    if (!cep.trim()) e.cep = 'CEP obrigatório';
     setErrors(e);
     return Object.keys(e).length === 0;
   }
@@ -104,44 +112,52 @@ export function AddressFormScreen({ navigation, route }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-dark"
+      style={{ flex: 1, backgroundColor: '#0D0D0D' }}
     >
-      <View className="px-4 pt-14 pb-4 flex-row items-center gap-3">
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16 }}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
         </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">
+        <Text style={{ color: '#F5F0E8', fontSize: 20, fontWeight: 'bold' }}>
           {existing ? 'Editar' : 'Novo'} endereço
         </Text>
       </View>
 
-      <ScrollView className="flex-1 px-4" keyboardShouldPersistTaps="handled">
-        <View className="mb-4">
-          <Text className="text-offwhite text-sm mb-1 font-semibold">CEP</Text>
-          <View
-            className={`flex-row items-center bg-dark-card border rounded-xl px-4 ${
-              errors.cep ? 'border-danger' : 'border-dark-border'
-            }`}
-          >
-            <Ionicons name="location-outline" size={18} color="#6B7280" style={{ marginRight: 8 }} />
-            <Input
-              placeholder="00000-000"
-              keyboardType="numeric"
-              value={cep}
-              onChangeText={formatCepInput}
-              className="flex-1 border-0 mb-0 px-0"
-            />
-            {cepLoading && <ActivityIndicator size="small" color="#8B1A1A" />}
-            {!cepLoading && cep.replace(/\D/g, '').length === 8 && !errors.cep && (
-              <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
-            )}
-          </View>
-          {errors.cep ? (
-            <Text className="text-danger text-xs mt-1">{errors.cep}</Text>
-          ) : (
-            <Text className="text-gray-500 text-xs mt-1">Preenchimento automático ao digitar</Text>
-          )}
+      <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+
+        {/* CEP */}
+        <Text style={{ color: '#F5F0E8', fontSize: 14, fontWeight: '600', marginBottom: 6 }}>CEP</Text>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: '#1A1A1A',
+          borderWidth: 1,
+          borderColor: cepError ? '#EF4444' : cepOk ? '#22C55E' : '#2A2A2A',
+          borderRadius: 12,
+          paddingHorizontal: 14,
+          marginBottom: 4,
+        }}>
+          <Ionicons name="location-outline" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+          <TextInput
+            style={{ flex: 1, color: '#F5F0E8', fontSize: 15, paddingVertical: 14 }}
+            placeholder="00000-000"
+            placeholderTextColor="#6B7280"
+            keyboardType="numeric"
+            value={cep}
+            onChangeText={handleCepChange}
+            maxLength={9}
+          />
+          {cepLoading && <ActivityIndicator size="small" color="#8B1A1A" />}
+          {!cepLoading && cepOk && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
+          {!cepLoading && !!cepError && <Ionicons name="close-circle" size={20} color="#EF4444" />}
         </View>
+        {cepError ? (
+          <Text style={{ color: '#EF4444', fontSize: 12, marginBottom: 14 }}>{cepError}</Text>
+        ) : (
+          <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 14 }}>
+            Preenche os campos automaticamente
+          </Text>
+        )}
 
         <Input
           label="Rua"
@@ -151,8 +167,8 @@ export function AddressFormScreen({ navigation, route }: Props) {
           error={errors.rua}
         />
 
-        <View className="flex-row gap-3">
-          <View className="flex-1">
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 1 }}>
             <Input
               label="Número"
               placeholder="123"
@@ -162,7 +178,7 @@ export function AddressFormScreen({ navigation, route }: Props) {
               error={errors.numero}
             />
           </View>
-          <View className="flex-1">
+          <View style={{ flex: 1 }}>
             <Input
               label="Complemento"
               placeholder="Apto, casa..."
@@ -180,8 +196,8 @@ export function AddressFormScreen({ navigation, route }: Props) {
           error={errors.bairro}
         />
 
-        <View className="flex-row gap-3">
-          <View className="flex-[2]">
+        <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flex: 2 }}>
             <Input
               label="Cidade"
               placeholder="Preenchido automaticamente"
@@ -190,7 +206,7 @@ export function AddressFormScreen({ navigation, route }: Props) {
               error={errors.cidade}
             />
           </View>
-          <View className="flex-1">
+          <View style={{ flex: 1 }}>
             <Input
               label="UF"
               placeholder="MG"
@@ -203,10 +219,21 @@ export function AddressFormScreen({ navigation, route }: Props) {
           </View>
         </View>
 
-        <View className="flex-row items-center justify-between bg-dark-card border border-dark-border rounded-xl px-4 py-3 mb-6">
-          <View className="flex-row items-center gap-3">
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          backgroundColor: '#1A1A1A',
+          borderWidth: 1,
+          borderColor: '#2A2A2A',
+          borderRadius: 12,
+          paddingHorizontal: 16,
+          paddingVertical: 14,
+          marginBottom: 24,
+        }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
             <Ionicons name="star-outline" size={18} color="#C8943C" />
-            <Text className="text-offwhite font-semibold">Endereço padrão</Text>
+            <Text style={{ color: '#F5F0E8', fontWeight: '600' }}>Endereço padrão</Text>
           </View>
           <Switch
             value={padrao}
@@ -216,13 +243,8 @@ export function AddressFormScreen({ navigation, route }: Props) {
           />
         </View>
 
-        <Button
-          title="Salvar endereço"
-          onPress={handleSave}
-          loading={loading}
-          size="lg"
-          className="mb-8"
-        />
+        <Button title="Salvar endereço" onPress={handleSave} loading={loading} size="lg" />
+        <View style={{ height: 32 }} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

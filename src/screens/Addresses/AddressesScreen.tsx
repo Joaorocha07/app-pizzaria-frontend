@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
 import { userService } from '../../services/userService';
 import { Endereco } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Header } from '../../components/common/Header';
 import { Button } from '../../components/common/Button';
 import { AppStackParamList } from '../../navigation/types';
 
@@ -52,14 +54,18 @@ export function AddressesScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-4">
-          <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Text className="text-primary font-bold text-base">←</Text>
+      <Header
+        title="Endereços"
+        onBack={() => navigation.goBack()}
+        rightElement={
+          <TouchableOpacity
+            onPress={() => navigation.navigate('AddressForm', {})}
+            style={{ width: 44, alignItems: 'flex-end' }}
+          >
+            <Ionicons name="add-circle-outline" size={26} color="#8B1A1A" />
           </TouchableOpacity>
-          <Text className="text-offwhite text-xl font-bold">Endereços</Text>
-        </View>
-      </View>
+        }
+      />
 
       <FlatList
         data={enderecos}

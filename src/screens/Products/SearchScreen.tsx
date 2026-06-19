@@ -1,6 +1,8 @@
 import React, { useState, useCallback, useEffect } from 'react';
 import { View, Text, FlatList, TextInput } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { productService } from '../../services/productService';
 import { Produto } from '../../types';
 import { ProductCard } from '../../components/specific/ProductCard';
@@ -12,6 +14,7 @@ type Props = {
 };
 
 export function SearchScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
   const [query, setQuery] = useState('');
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(false);
@@ -37,10 +40,10 @@ export function SearchScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4">
+      <View style={{ paddingTop: insets.top + 12 }} className="px-4 pb-4 border-b border-dark-border">
         <Text className="text-offwhite text-2xl font-bold mb-3">Buscar</Text>
         <View className="bg-dark-card border border-dark-border rounded-xl flex-row items-center px-4">
-          <Text className="text-gray-400 mr-2">🔍</Text>
+          <Ionicons name="search-outline" size={18} color="#6B7280" style={{ marginRight: 8 }} />
           <TextInput
             className="flex-1 text-offwhite py-3 text-base"
             placeholder="Buscar pizzas, bebidas..."
@@ -49,6 +52,14 @@ export function SearchScreen({ navigation }: Props) {
             onChangeText={setQuery}
             autoFocus
           />
+          {query.length > 0 && (
+            <Ionicons
+              name="close-circle"
+              size={18}
+              color="#6B7280"
+              onPress={() => setQuery('')}
+            />
+          )}
         </View>
       </View>
 
@@ -61,11 +72,17 @@ export function SearchScreen({ navigation }: Props) {
           contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
           ListEmptyComponent={
             query.length >= 2 ? (
-              <View className="items-center py-12">
-                <Text className="text-4xl mb-3">😕</Text>
-                <Text className="text-gray-400 text-base">Nenhum produto encontrado</Text>
+              <View className="items-center py-16">
+                <Ionicons name="search-outline" size={64} color="#6B7280" />
+                <Text className="text-offwhite text-base font-bold mt-4">Nenhum produto encontrado</Text>
+                <Text className="text-gray-400 text-sm mt-1 text-center">Tente um termo diferente</Text>
               </View>
-            ) : null
+            ) : (
+              <View className="items-center py-16">
+                <Ionicons name="pizza-outline" size={64} color="#2A2A2A" />
+                <Text className="text-gray-500 text-base mt-4">Digite para buscar</Text>
+              </View>
+            )
           }
           renderItem={({ item }) => (
             <ProductCard

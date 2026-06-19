@@ -4,6 +4,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { userService } from '../../services/userService';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
+import { Header } from '../../components/common/Header';
 import { isValidPassword } from '../../utils/validation';
 import { AppStackParamList } from '../../navigation/types';
 
@@ -47,12 +48,7 @@ export function ChangePasswordScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       className="flex-1 bg-dark"
     >
-      <View className="px-4 pt-14 pb-4 flex-row items-center gap-4">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-primary font-bold text-base">←</Text>
-        </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">Alterar senha</Text>
-      </View>
+      <Header title="Alterar senha" onBack={() => navigation.goBack()} />
       <ScrollView className="flex-1 px-4" keyboardShouldPersistTaps="handled">
         <Input label="Senha atual" isPassword value={senhaAtual} onChangeText={setSenhaAtual} />
         <Input label="Nova senha" isPassword value={novaSenha} onChangeText={setNovaSenha} />

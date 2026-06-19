@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { orderService } from '../../services/orderService';
 import { Pedido } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Header } from '../../components/common/Header';
 import { OrderStatusBadge } from '../../components/specific/OrderStatusBadge';
 import { formatCurrency, formatDateTime, formatOrderId } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
@@ -42,9 +43,7 @@ export function OrdersScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4">
-        <Text className="text-offwhite text-2xl font-bold">Meus pedidos</Text>
-      </View>
+      <Header title="Meus pedidos" />
 
       <FlatList
         data={pedidos}

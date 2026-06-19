@@ -3,6 +3,7 @@ import { View, Text, ScrollView, TouchableOpacity, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
+import { Header } from '../../components/common/Header';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = {
@@ -18,8 +19,14 @@ interface MenuItem {
   onPress: () => void;
 }
 
+const PAPEL_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  CLIENTE: { label: 'Cliente', color: '#C8943C', bg: 'bg-yellow-900/30' },
+  FUNCIONARIO: { label: 'Funcionário', color: '#3B82F6', bg: 'bg-blue-900/30' },
+  ADMIN: { label: 'Administrador', color: '#8B5CF6', bg: 'bg-purple-900/30' },
+};
+
 export function ProfileScreen({ navigation }: Props) {
-  const { usuario, logout } = useAuth();
+  const { usuario, logout, isCliente } = useAuth();
 
   function handleLogout() {
     Alert.alert('Sair', 'Deseja sair da conta?', [
@@ -35,6 +42,8 @@ export function ProfileScreen({ navigation }: Props) {
     .join('')
     .toUpperCase() ?? '?';
 
+  const papelConfig = usuario ? (PAPEL_CONFIG[usuario.papel] ?? PAPEL_CONFIG.CLIENTE) : null;
+
   const menuItems: MenuItem[] = [
     {
       label: 'Editar perfil',
@@ -42,12 +51,16 @@ export function ProfileScreen({ navigation }: Props) {
       color: '#F5F0E8',
       onPress: () => navigation.navigate('EditProfile'),
     },
-    {
-      label: 'Meus endereços',
-      icon: 'location-outline',
-      color: '#F5F0E8',
-      onPress: () => navigation.navigate('Addresses'),
-    },
+    ...(isCliente
+      ? [
+          {
+            label: 'Meus endereços',
+            icon: 'location-outline' as IoniconName,
+            color: '#F5F0E8',
+            onPress: () => navigation.navigate('Addresses'),
+          },
+        ]
+      : []),
     {
       label: 'Alterar senha',
       icon: 'lock-closed-outline',
@@ -64,9 +77,7 @@ export function ProfileScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4">
-        <Text className="text-offwhite text-2xl font-bold">Perfil</Text>
-      </View>
+      <Header title="Perfil" />
 
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         <View className="items-center py-6 px-4">
@@ -75,6 +86,14 @@ export function ProfileScreen({ navigation }: Props) {
           </View>
           <Text className="text-offwhite text-xl font-bold">{usuario?.nome}</Text>
           <Text className="text-gray-400 text-sm mt-1">{usuario?.email}</Text>
+          {papelConfig && (
+            <View className={`flex-row items-center gap-1 px-3 py-1 rounded-full mt-2 ${papelConfig.bg}`}>
+              <Ionicons name="shield-checkmark-outline" size={12} color={papelConfig.color} />
+              <Text className="text-xs font-semibold" style={{ color: papelConfig.color }}>
+                {papelConfig.label}
+              </Text>
+            </View>
+          )}
           {usuario?.telefone && (
             <View className="flex-row items-center gap-1 mt-1">
               <Ionicons name="call-outline" size={12} color="#6B7280" />

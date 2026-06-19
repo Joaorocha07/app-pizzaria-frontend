@@ -10,6 +10,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../../contexts/CartContext';
+import { Header } from '../../components/common/Header';
 import { marketingService } from '../../services/marketingService';
 import { Button } from '../../components/common/Button';
 import { formatCurrency } from '../../utils/helpers';
@@ -65,18 +66,18 @@ export function CartScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
-        </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">Carrinho</Text>
-        <TouchableOpacity onPress={() => Alert.alert('Limpar', 'Deseja limpar o carrinho?', [
-          { text: 'Cancelar', style: 'cancel' },
-          { text: 'Limpar', style: 'destructive', onPress: clearCart },
-        ])}>
-          <Text className="text-danger text-sm">Limpar</Text>
-        </TouchableOpacity>
-      </View>
+      <Header
+        title="Carrinho"
+        onBack={() => navigation.goBack()}
+        rightElement={
+          <TouchableOpacity onPress={() => Alert.alert('Limpar', 'Deseja limpar o carrinho?', [
+            { text: 'Cancelar', style: 'cancel' },
+            { text: 'Limpar', style: 'destructive', onPress: clearCart },
+          ])} style={{ width: 44, alignItems: 'flex-end' }}>
+            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          </TouchableOpacity>
+        }
+      />
 
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-4">
         {itens.map((item, index) => (

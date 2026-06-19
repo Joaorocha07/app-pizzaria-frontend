@@ -1,4 +1,4 @@
-export type PapelUsuario = 'CLIENTE' | 'ADMIN';
+export type PapelUsuario = 'CLIENTE' | 'FUNCIONARIO' | 'ADMIN';
 
 export type StatusPedido =
   | 'PENDENTE'

@@ -18,6 +18,7 @@ import { userService } from '../../services/userService';
 import { searchCep } from '../../services/cepService';
 import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
+import { Header } from '../../components/common/Header';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = {
@@ -114,14 +115,10 @@ export function AddressFormScreen({ navigation, route }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={{ flex: 1, backgroundColor: '#0D0D0D' }}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingTop: 56, paddingBottom: 16 }}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
-        </TouchableOpacity>
-        <Text style={{ color: '#F5F0E8', fontSize: 20, fontWeight: 'bold' }}>
-          {existing ? 'Editar' : 'Novo'} endereço
-        </Text>
-      </View>
+      <Header
+        title={existing ? 'Editar endereço' : 'Novo endereço'}
+        onBack={() => navigation.goBack()}
+      />
 
       <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 

@@ -5,6 +5,7 @@ import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { marketingService } from '../../services/marketingService';
 import { Button } from '../../components/common/Button';
+import { Header } from '../../components/common/Header';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = {
@@ -40,12 +41,7 @@ export function ReviewScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center gap-3">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
-        </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">Avaliar pedido</Text>
-      </View>
+      <Header title="Avaliar pedido" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1 px-4">
         <View className="items-center py-6">

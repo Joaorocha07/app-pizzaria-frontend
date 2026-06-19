@@ -13,8 +13,10 @@ import { useCart } from '../../contexts/CartContext';
 import { productService } from '../../services/productService';
 import { marketingService } from '../../services/marketingService';
 import { Produto, TamanhoProduto, Borda } from '../../types';
+import { Ionicons } from '@expo/vector-icons';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Button } from '../../components/common/Button';
+import { Header } from '../../components/common/Header';
 import { formatCurrency } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
 
@@ -78,12 +80,11 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
               <Text className="text-8xl">🍕</Text>
             </View>
           )}
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            className="absolute top-12 left-4 bg-dark/80 rounded-full p-2"
-          >
-            <Text className="text-offwhite text-lg px-1">←</Text>
-          </TouchableOpacity>
+          <Header
+            title=""
+            variant="transparent"
+            onBack={() => navigation.goBack()}
+          />
         </View>
 
         <View className="px-4 pt-4">

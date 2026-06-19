@@ -8,6 +8,9 @@ export type AuthStackParamList = {
 export type AppTabParamList = {
   Home: undefined;
   Pedidos: undefined;
+  AdminPedidos: undefined;
+  AdminProdutos: undefined;
+  AdminRelatorios: undefined;
   Perfil: undefined;
 };
 
@@ -23,4 +26,5 @@ export type AppStackParamList = {
   AddressForm: { address?: Endereco };
   Notificacoes: undefined;
   Review: { orderId?: number; productId?: number };
+  AdminProductForm: { productId?: number };
 };

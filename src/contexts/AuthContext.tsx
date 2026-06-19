@@ -9,6 +9,10 @@ interface AuthContextData {
   token: string | null;
   isLoading: boolean;
   isAuthenticated: boolean;
+  isCliente: boolean;
+  isFuncionario: boolean;
+  isAdmin: boolean;
+  isStaff: boolean;
   login: (email: string, senha: string) => Promise<void>;
   register: (nome: string, email: string, senha: string, telefone?: string) => Promise<void>;
   logout: () => Promise<void>;
@@ -81,6 +85,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         token,
         isLoading,
         isAuthenticated: !!token && !!usuario,
+        isCliente: usuario?.papel === 'CLIENTE',
+        isFuncionario: usuario?.papel === 'FUNCIONARIO',
+        isAdmin: usuario?.papel === 'ADMIN',
+        isStaff: usuario?.papel === 'FUNCIONARIO' || usuario?.papel === 'ADMIN',
         login,
         register,
         logout,

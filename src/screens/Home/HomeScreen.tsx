@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { BannerCarousel } from '../../components/specific/BannerCarousel';
 import { ProductCard } from '../../components/specific/ProductCard';
@@ -78,6 +79,7 @@ export function HomeScreen({ navigation }: Props) {
   if (loading) return <LoadingSpinner fullScreen message="Carregando cardápio..." />;
   if (error) return <ErrorMessage message={error} onRetry={load} />;
 
+  const insets = useSafeAreaInsets();
   const primeiroNome = usuario?.nome.split(' ')[0] ?? 'Cliente';
 
   return (
@@ -86,9 +88,9 @@ export function HomeScreen({ navigation }: Props) {
       refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#8B1A1A" />}
       showsVerticalScrollIndicator={false}
     >
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
+      <View style={{ paddingTop: insets.top + 16 }} className="px-4 pb-4 flex-row items-center justify-between">
         <View>
-          <Text className="text-gray-400 text-sm">Olá, {primeiroNome} 👋</Text>
+          <Text className="text-gray-400 text-sm">Olá, {primeiroNome}</Text>
           <Text className="text-offwhite text-xl font-bold mt-1">O que vai pedir hoje?</Text>
         </View>
         <TouchableOpacity

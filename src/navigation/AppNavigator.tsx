@@ -11,6 +11,7 @@ import { AddressesScreen } from '../screens/Addresses/AddressesScreen';
 import { AddressFormScreen } from '../screens/Addresses/AddressFormScreen';
 import { NotificationsScreen } from '../screens/Notifications/NotificationsScreen';
 import { ReviewScreen } from '../screens/Reviews/ReviewScreen';
+import { AdminProductFormScreen } from '../screens/Admin/ProductFormScreen';
 import { AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -29,6 +30,7 @@ export function AppNavigator() {
       <Stack.Screen name="AddressForm" component={AddressFormScreen} />
       <Stack.Screen name="Notificacoes" component={NotificationsScreen} />
       <Stack.Screen name="Review" component={ReviewScreen} />
+      <Stack.Screen name="AdminProductForm" component={AdminProductFormScreen} />
     </Stack.Navigator>
   );
 }

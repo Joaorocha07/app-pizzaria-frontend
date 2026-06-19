@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { orderService } from '../../services/orderService';
 import { Pedido, HistoricoStatusPedido, StatusPedido } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Header } from '../../components/common/Header';
 import { OrderStatusBadge } from '../../components/specific/OrderStatusBadge';
 import { Button } from '../../components/common/Button';
 import { formatCurrency, formatDateTime, formatOrderId } from '../../utils/helpers';
@@ -72,14 +73,11 @@ export function OrderTrackingScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center justify-between">
-        <TouchableOpacity onPress={() => navigation.navigate('MainTabs', { screen: 'Pedidos' })} className="flex-row items-center gap-1">
-          <Ionicons name="arrow-back" size={20} color="#8B1A1A" />
-          <Text className="text-primary font-bold">Pedidos</Text>
-        </TouchableOpacity>
-        <Text className="text-offwhite font-bold">Pedido {formatOrderId(pedido.id)}</Text>
-        <OrderStatusBadge status={pedido.status} />
-      </View>
+      <Header
+        title={`Pedido ${formatOrderId(pedido.id)}`}
+        onBack={() => navigation.navigate('MainTabs', { screen: 'Pedidos' })}
+        rightElement={<OrderStatusBadge status={pedido.status} />}
+      />
 
       <ScrollView
         className="flex-1 px-4"

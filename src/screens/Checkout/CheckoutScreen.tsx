@@ -7,6 +7,7 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Header } from '../../components/common/Header';
 import { useCart } from '../../contexts/CartContext';
 import { userService } from '../../services/userService';
 import { orderService } from '../../services/orderService';
@@ -78,12 +79,7 @@ export function CheckoutScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center gap-4">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Text className="text-primary font-bold text-base">←</Text>
-        </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">Finalizar pedido</Text>
-      </View>
+      <Header title="Finalizar pedido" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <View className="mb-4">

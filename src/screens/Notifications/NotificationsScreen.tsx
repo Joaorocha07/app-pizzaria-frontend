@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { notificationService } from '../../services/notificationService';
 import { Notificacao } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
+import { Header } from '../../components/common/Header';
 import { formatDateTime } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
 
@@ -46,12 +47,7 @@ export function NotificationsScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1 bg-dark">
-      <View className="px-4 pt-14 pb-4 flex-row items-center gap-4">
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#8B1A1A" />
-        </TouchableOpacity>
-        <Text className="text-offwhite text-xl font-bold">Notificações</Text>
-      </View>
+      <Header title="Notificações" onBack={() => navigation.goBack()} />
 
       <FlatList
         data={notificacoes}

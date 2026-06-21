@@ -28,16 +28,17 @@ const TAB_ICONS: Record<string, { active: IoniconName; inactive: IoniconName }> 
 const TAB_OPTIONS = {
   headerShown: false,
   tabBarStyle: {
-    backgroundColor: '#1A1A1A',
-    borderTopColor: '#2A2A2A',
+    backgroundColor: '#141414',
+    borderTopColor: '#242424',
     borderTopWidth: 1,
-    height: 64,
-    paddingBottom: 10,
-    paddingTop: 6,
+    height: 68,
+    paddingBottom: 11,
+    paddingTop: 7,
   },
-  tabBarActiveTintColor: '#8B1A1A',
-  tabBarInactiveTintColor: '#6B7280',
-  tabBarLabelStyle: { fontSize: 11, fontWeight: '600' as const },
+  tabBarActiveTintColor: '#E32626',
+  tabBarInactiveTintColor: '#7B8190',
+  tabBarLabelStyle: { fontSize: 11, fontWeight: '800' as const },
+  tabBarItemStyle: { paddingVertical: 2 },
 };
 
 export function TabNavigator() {

@@ -11,6 +11,7 @@ export type AppTabParamList = {
   AdminPedidos: undefined;
   AdminProdutos: undefined;
   AdminRelatorios: undefined;
+  AdminGerenciar: undefined;
   Perfil: undefined;
 };
 
@@ -27,4 +28,13 @@ export type AppStackParamList = {
   Notificacoes: undefined;
   Review: { orderId?: number; productId?: number };
   AdminProductForm: { productId?: number };
+  AdminCategories: undefined;
+  AdminCategoryForm: { categoryId?: number };
+  AdminCrusts: undefined;
+  AdminCrustForm: { crustId?: number };
+  AdminCoupons: undefined;
+  AdminCouponForm: { couponId?: number };
+  AdminBanners: undefined;
+  AdminBannerForm: { bannerId?: number };
+  AdminStoreConfig: undefined;
 };

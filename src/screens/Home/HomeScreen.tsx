@@ -27,6 +27,7 @@ type Props = {
 
 export function HomeScreen({ navigation }: Props) {
   const { usuario } = useAuth();
+  const insets = useSafeAreaInsets();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -78,8 +79,6 @@ export function HomeScreen({ navigation }: Props) {
 
   if (loading) return <LoadingSpinner fullScreen message="Carregando cardápio..." />;
   if (error) return <ErrorMessage message={error} onRetry={load} />;
-
-  const insets = useSafeAreaInsets();
   const primeiroNome = usuario?.nome.split(' ')[0] ?? 'Cliente';
 
   return (

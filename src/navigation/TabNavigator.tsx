@@ -8,6 +8,7 @@ import { ProfileScreen } from '../screens/Profile/ProfileScreen';
 import { AdminOrdersManagementScreen } from '../screens/Admin/OrdersManagementScreen';
 import { AdminProductsManagementScreen } from '../screens/Admin/ProductsManagementScreen';
 import { AdminReportsScreen } from '../screens/Admin/ReportsScreen';
+import { AdminMoreScreen } from '../screens/Admin/AdminMoreScreen';
 import { AppTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<AppTabParamList>();
@@ -20,6 +21,7 @@ const TAB_ICONS: Record<string, { active: IoniconName; inactive: IoniconName }> 
   AdminPedidos: { active: 'list', inactive: 'list-outline' },
   AdminProdutos: { active: 'cube', inactive: 'cube-outline' },
   AdminRelatorios: { active: 'bar-chart', inactive: 'bar-chart-outline' },
+  AdminGerenciar: { active: 'settings', inactive: 'settings-outline' },
   Perfil: { active: 'person-circle', inactive: 'person-circle-outline' },
 };
 
@@ -79,6 +81,13 @@ export function TabNavigator() {
               name="AdminRelatorios"
               component={AdminReportsScreen}
               options={{ tabBarLabel: 'Relatórios' }}
+            />
+          )}
+          {isAdmin && (
+            <Tab.Screen
+              name="AdminGerenciar"
+              component={AdminMoreScreen}
+              options={{ tabBarLabel: 'Gerenciar' }}
             />
           )}
         </>

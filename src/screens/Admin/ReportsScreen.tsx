@@ -27,7 +27,10 @@ function MetricCard({
 }) {
   return (
     <View className="bg-dark-card rounded-2xl p-4 flex-1">
-      <View className="w-10 h-10 rounded-xl items-center justify-center mb-3" style={{ backgroundColor: `${color}22` }}>
+      <View
+        className="w-10 h-10 rounded-xl items-center justify-center mb-3"
+        style={{ backgroundColor: `${color}22` }}
+      >
         <Ionicons name={icon} size={22} color={color} />
       </View>
       <Text className="text-gray-400 text-xs mb-1">{label}</Text>
@@ -67,7 +70,7 @@ export function AdminReportsScreen() {
       ]);
       setVendas(vendasData);
       setProdutos(produtosData);
-    } catch (e: any) {
+    } catch {
       // silencia — dados podem não estar disponíveis
     } finally {
       setLoading(false);
@@ -99,15 +102,11 @@ export function AdminReportsScreen() {
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
-            onRefresh={() => {
-              setRefreshing(true);
-              load();
-            }}
+            onRefresh={() => { setRefreshing(true); load(); }}
             tintColor="#8B1A1A"
           />
         }
       >
-        {/* Filtro de período */}
         <View className="flex-row gap-2 mb-6">
           {periodos.map((p) => (
             <TouchableOpacity
@@ -117,11 +116,7 @@ export function AdminReportsScreen() {
                 periodo === p.key ? 'bg-primary border-primary' : 'bg-dark-card border-dark-border'
               }`}
             >
-              <Text
-                className={`text-sm font-bold ${
-                  periodo === p.key ? 'text-offwhite' : 'text-gray-400'
-                }`}
-              >
+              <Text className={`text-sm font-bold ${periodo === p.key ? 'text-offwhite' : 'text-gray-400'}`}>
                 {p.label}
               </Text>
             </TouchableOpacity>
@@ -130,38 +125,31 @@ export function AdminReportsScreen() {
 
         {vendas ? (
           <>
-            {/* Cards de métricas */}
             <View className="flex-row gap-3 mb-3">
               <MetricCard
                 icon="cart-outline"
                 label="Total de pedidos"
-                value={String(vendas.totalPedidos ?? 0)}
+                value={String(vendas.totalPedidos)}
                 color="#C8943C"
               />
               <MetricCard
                 icon="cash-outline"
-                label="Faturamento"
-                value={formatCurrency(vendas.totalFaturamento ?? 0)}
+                label="Receita"
+                value={formatCurrency(vendas.receita)}
                 color="#22C55E"
               />
             </View>
-            <View className="mb-6">
-              <MetricCard
-                icon="trending-up-outline"
-                label="Ticket médio"
-                value={formatCurrency(vendas.ticketMedio ?? 0)}
-                color="#8B5CF6"
-              />
-            </View>
 
-            {/* Pedidos por status */}
-            {vendas.pedidosPorStatus && Object.keys(vendas.pedidosPorStatus).length > 0 && (
+            {vendas.porStatus.length > 0 && (
               <View className="bg-dark-card rounded-2xl p-4 mb-6">
                 <Text className="text-offwhite font-bold mb-3">Pedidos por status</Text>
-                {Object.entries(vendas.pedidosPorStatus).map(([status, qty]) => (
-                  <View key={status} className="flex-row justify-between items-center py-2 border-b border-dark-border last:border-0">
+                {vendas.porStatus.map(({ status, quantidade }) => (
+                  <View
+                    key={status}
+                    className="flex-row justify-between items-center py-2 border-b border-dark-border"
+                  >
                     <Text className="text-gray-400 text-sm">{STATUS_LABEL[status] ?? status}</Text>
-                    <Text className="text-offwhite font-semibold">{qty}</Text>
+                    <Text className="text-offwhite font-semibold">{quantidade}</Text>
                   </View>
                 ))}
               </View>
@@ -176,25 +164,21 @@ export function AdminReportsScreen() {
           </View>
         )}
 
-        {/* Ranking de produtos */}
         {produtos.length > 0 && (
           <View className="bg-dark-card rounded-2xl p-4">
             <Text className="text-offwhite font-bold mb-3">Produtos mais vendidos</Text>
             {produtos.slice(0, 10).map((p, index) => (
               <View
-                key={p.produtoId}
+                key={p.produto.id}
                 className="flex-row items-center py-2.5 border-b border-dark-border"
               >
                 <View className="w-7 h-7 rounded-full bg-dark-border items-center justify-center mr-3">
                   <Text className="text-accent text-xs font-bold">{index + 1}</Text>
                 </View>
                 <Text className="text-offwhite flex-1 text-sm" numberOfLines={1}>
-                  {p.nome}
+                  {p.produto.nome}
                 </Text>
-                <View className="items-end">
-                  <Text className="text-offwhite text-sm font-semibold">{p.totalVendido} un.</Text>
-                  <Text className="text-gray-400 text-xs">{formatCurrency(p.faturamento)}</Text>
-                </View>
+                <Text className="text-offwhite text-sm font-semibold">{p.quantidade} un.</Text>
               </View>
             ))}
           </View>

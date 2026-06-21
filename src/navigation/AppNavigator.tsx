@@ -12,6 +12,15 @@ import { AddressFormScreen } from '../screens/Addresses/AddressFormScreen';
 import { NotificationsScreen } from '../screens/Notifications/NotificationsScreen';
 import { ReviewScreen } from '../screens/Reviews/ReviewScreen';
 import { AdminProductFormScreen } from '../screens/Admin/ProductFormScreen';
+import { AdminCategoriesManagementScreen } from '../screens/Admin/CategoriesManagementScreen';
+import { AdminCategoryFormScreen } from '../screens/Admin/CategoryFormScreen';
+import { AdminCrustsManagementScreen } from '../screens/Admin/CrustsManagementScreen';
+import { AdminCrustFormScreen } from '../screens/Admin/CrustFormScreen';
+import { AdminCouponsManagementScreen } from '../screens/Admin/CouponsManagementScreen';
+import { AdminCouponFormScreen } from '../screens/Admin/CouponFormScreen';
+import { AdminBannersManagementScreen } from '../screens/Admin/BannersManagementScreen';
+import { AdminBannerFormScreen } from '../screens/Admin/BannerFormScreen';
+import { AdminStoreConfigScreen } from '../screens/Admin/StoreConfigScreen';
 import { AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -31,6 +40,15 @@ export function AppNavigator() {
       <Stack.Screen name="Notificacoes" component={NotificationsScreen} />
       <Stack.Screen name="Review" component={ReviewScreen} />
       <Stack.Screen name="AdminProductForm" component={AdminProductFormScreen} />
+      <Stack.Screen name="AdminCategories" component={AdminCategoriesManagementScreen} />
+      <Stack.Screen name="AdminCategoryForm" component={AdminCategoryFormScreen} />
+      <Stack.Screen name="AdminCrusts" component={AdminCrustsManagementScreen} />
+      <Stack.Screen name="AdminCrustForm" component={AdminCrustFormScreen} />
+      <Stack.Screen name="AdminCoupons" component={AdminCouponsManagementScreen} />
+      <Stack.Screen name="AdminCouponForm" component={AdminCouponFormScreen} />
+      <Stack.Screen name="AdminBanners" component={AdminBannersManagementScreen} />
+      <Stack.Screen name="AdminBannerForm" component={AdminBannerFormScreen} />
+      <Stack.Screen name="AdminStoreConfig" component={AdminStoreConfigScreen} />
     </Stack.Navigator>
   );
 }

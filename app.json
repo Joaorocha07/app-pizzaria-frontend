@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Pizzaria",
-    "slug": "app-pizzaria",
+    "slug": "app-pizzaria-frontend",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,6 +29,18 @@
     },
     "plugins": [
       "expo-notifications"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "090e91ba-241f-447a-812b-39bc43c6cd8d"
+      }
+    },
+    "owner": "pizzaria-apps-organization",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/090e91ba-241f-447a-812b-39bc43c6cd8d"
+    }
   }
 }

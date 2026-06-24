@@ -9,7 +9,7 @@ interface LoadingSpinnerProps {
 export function LoadingSpinner({ message, fullScreen = false }: LoadingSpinnerProps) {
   return (
     <View className={`items-center justify-center ${fullScreen ? 'flex-1 bg-dark' : 'py-8'}`}>
-      <ActivityIndicator size="large" color="#8B1A1A" />
+      <ActivityIndicator size="large" color="#E63946" />
       {message && <Text className="text-gray-400 mt-3 text-sm">{message}</Text>}
     </View>
   );

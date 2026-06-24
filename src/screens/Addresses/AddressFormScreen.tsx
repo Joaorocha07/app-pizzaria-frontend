@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -144,7 +144,7 @@ export function AddressFormScreen({ navigation, route }: Props) {
             onChangeText={handleCepChange}
             maxLength={9}
           />
-          {cepLoading && <ActivityIndicator size="small" color="#8B1A1A" />}
+          {cepLoading && <ActivityIndicator size="small" color="#E63946" />}
           {!cepLoading && cepOk && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
           {!cepLoading && !!cepError && <Ionicons name="close-circle" size={20} color="#EF4444" />}
         </View>
@@ -229,13 +229,13 @@ export function AddressFormScreen({ navigation, route }: Props) {
           marginBottom: 24,
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Ionicons name="star-outline" size={18} color="#C8943C" />
+            <Ionicons name="star-outline" size={18} color="#F4A261" />
             <Text style={{ color: '#F5F0E8', fontWeight: '600' }}>Endereço padrão</Text>
           </View>
           <Switch
             value={padrao}
             onValueChange={setPadrao}
-            trackColor={{ true: '#8B1A1A', false: '#2A2A2A' }}
+            trackColor={{ true: '#E63946', false: '#2A2A2A' }}
             thumbColor={padrao ? '#F5F0E8' : '#6B7280'}
           />
         </View>

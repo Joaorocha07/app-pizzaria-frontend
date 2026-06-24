@@ -18,9 +18,9 @@ interface MenuItem {
 }
 
 const PAPEL_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
-  CLIENTE: { label: 'Cliente', color: '#C8943C', bg: '#2A1F08' },
-  FUNCIONARIO: { label: 'Funcionário', color: '#3B82F6', bg: '#0A1830' },
-  ADMIN: { label: 'Administrador', color: '#8B5CF6', bg: '#1A1030' },
+  CLIENTE: { label: 'Cliente', color: '#F4A261', bg: 'rgba(244,162,97,0.12)' },
+  FUNCIONARIO: { label: 'Funcionário', color: '#3B82F6', bg: 'rgba(59,130,246,0.12)' },
+  ADMIN: { label: 'Administrador', color: '#9B5DE5', bg: 'rgba(155,93,229,0.12)' },
 };
 
 export function ProfileScreen({ navigation }: Props) {
@@ -48,7 +48,7 @@ export function ProfileScreen({ navigation }: Props) {
       label: 'Editar perfil',
       description: 'Nome, telefone e dados da conta',
       icon: 'create-outline',
-      accent: '#C8943C',
+      accent: '#F4A261',
       onPress: () => navigation.navigate('EditProfile'),
     },
     ...(isCliente
@@ -64,14 +64,14 @@ export function ProfileScreen({ navigation }: Props) {
       label: 'Alterar senha',
       description: 'Mantenha o acesso protegido',
       icon: 'lock-closed-outline',
-      accent: '#8B5CF6',
+      accent: '#9B5DE5',
       onPress: () => navigation.navigate('ChangePassword'),
     },
     {
       label: 'Notificações',
       description: 'Alertas de pedidos e promoções',
       icon: 'notifications-outline',
-      accent: '#22C55E',
+      accent: '#2A9D8F',
       onPress: () => navigation.navigate('Notificacoes'),
     },
   ];
@@ -181,15 +181,15 @@ const styles = StyleSheet.create({
     width: 72,
     height: 72,
     borderRadius: 24,
-    backgroundColor: '#9F1717',
+    backgroundColor: '#B5222E',
     alignItems: 'center',
     justifyContent: 'center',
     marginRight: 14,
     borderWidth: 2,
-    borderColor: '#C62A2A',
-    shadowColor: '#8B1A1A',
+    borderColor: '#E63946',
+    shadowColor: '#E63946',
     shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.28,
+    shadowOpacity: 0.3,
     shadowRadius: 14,
     elevation: 8,
   },
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   kicker: {
-    color: '#C8943C',
+    color: '#F4A261',
     fontSize: 12,
     fontWeight: '800',
     textTransform: 'uppercase',

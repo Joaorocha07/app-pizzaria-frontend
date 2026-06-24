@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+﻿import React, { useRef, useState, useEffect } from 'react';
 import { View, Image, FlatList, Dimensions, TouchableOpacity, StyleSheet } from 'react-native';
 import { Banner } from '../../types';
 
@@ -121,7 +121,7 @@ const styles = StyleSheet.create({
   },
   dotActive: {
     width: 20,
-    backgroundColor: '#8B1A1A',
+    backgroundColor: '#E63946',
   },
   dotInactive: {
     width: 6,

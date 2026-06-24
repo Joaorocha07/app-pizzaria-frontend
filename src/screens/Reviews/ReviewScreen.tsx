@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -57,7 +57,7 @@ export function ReviewScreen({ navigation, route }: Props) {
                 <Ionicons
                   name={nota >= n ? 'star' : 'star-outline'}
                   size={40}
-                  color={nota >= n ? '#C8943C' : '#4B5563'}
+                  color={nota >= n ? '#F4A261' : '#4B5563'}
                 />
               </TouchableOpacity>
             ))}

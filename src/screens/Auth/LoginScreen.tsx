@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -8,9 +8,12 @@ import {
   Platform,
   Alert,
   StyleSheet,
+  Animated,
+  Switch,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { Input } from '../../components/common/Input';
@@ -28,7 +31,26 @@ export function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [loading, setLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [errors, setErrors] = useState<{ email?: string; senha?: string }>({});
+
+  const pulse = useRef(new Animated.Value(1)).current;
+  const fadeIn = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    Animated.timing(fadeIn, {
+      toValue: 1,
+      duration: 700,
+      useNativeDriver: true,
+    }).start();
+
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulse, { toValue: 1.08, duration: 1800, useNativeDriver: true }),
+        Animated.timing(pulse, { toValue: 1, duration: 1800, useNativeDriver: true }),
+      ]),
+    ).start();
+  }, []);
 
   function validate(): boolean {
     const newErrors: typeof errors = {};
@@ -56,23 +78,37 @@ export function LoginScreen({ navigation }: Props) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.root}
     >
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
-        {/* ── Área da marca ─────────────────────────────────── */}
-        <View style={[styles.brandArea, { paddingTop: insets.top + 32 }]}>
-          <View style={styles.circle1} />
-          <View style={styles.circle2} />
-          <View style={styles.circle3} />
+        {/* ── Brand area ─────────────────────────────────── */}
+        <View style={[styles.brandArea, { paddingTop: insets.top + 28 }]}>
+          {/* Decorative blobs */}
+          <View style={styles.blob1} />
+          <View style={styles.blob2} />
+          <View style={styles.blob3} />
 
-          <View style={styles.logoContainer}>
-            <Text style={styles.logoEmoji}>🍕</Text>
-          </View>
-          <Text style={styles.brandName}>Pizzaria</Text>
-          <Text style={styles.brandSub}>UBERABA  •  MG</Text>
+          <Animated.View style={[styles.logoContainer, { transform: [{ scale: pulse }] }]}>
+            <LinearGradient
+              colors={['#E63946', '#B5222E']}
+              style={styles.logoGradient}
+            >
+              <Text style={styles.logoEmoji}>🍕</Text>
+            </LinearGradient>
+            {/* Glow ring */}
+            <View style={styles.logoGlow} />
+          </Animated.View>
+
+          <Animated.View style={{ opacity: fadeIn, alignItems: 'center' }}>
+            <Text style={styles.brandName}>Pizzaria</Text>
+            <View style={styles.locationBadge}>
+              <Ionicons name="location" size={11} color="#E63946" />
+              <Text style={styles.brandSub}>UBERABA  •  MG</Text>
+            </View>
+          </Animated.View>
         </View>
 
-        {/* ── Card do formulário ────────────────────────────── */}
-        <View style={styles.formCard}>
+        {/* ── Form card ────────────────────────────────── */}
+        <Animated.View style={[styles.formCard, { opacity: fadeIn }]}>
           <Text style={styles.formTitle}>Bem-vindo de volta!</Text>
           <Text style={styles.formSub}>Entre na sua conta para continuar</Text>
 
@@ -84,7 +120,7 @@ export function LoginScreen({ navigation }: Props) {
             value={email}
             onChangeText={setEmail}
             error={errors.email}
-            leftIcon={<Ionicons name="mail-outline" size={18} color="#6B7280" />}
+            leftIcon={<Ionicons name="mail-outline" size={18} color="#666666" />}
           />
 
           <Input
@@ -94,8 +130,29 @@ export function LoginScreen({ navigation }: Props) {
             value={senha}
             onChangeText={setSenha}
             error={errors.senha}
-            leftIcon={<Ionicons name="lock-closed-outline" size={18} color="#6B7280" />}
+            leftIcon={<Ionicons name="lock-closed-outline" size={18} color="#666666" />}
           />
+
+          {/* Remember & Forgot */}
+          <View style={styles.rowOptions}>
+            <TouchableOpacity
+              style={styles.rememberRow}
+              onPress={() => setRememberMe((v) => !v)}
+              activeOpacity={0.8}
+            >
+              <Switch
+                value={rememberMe}
+                onValueChange={setRememberMe}
+                trackColor={{ false: '#2A2A2A', true: '#2A9D8F' }}
+                thumbColor="#FFFFFF"
+                style={{ transform: [{ scaleX: 0.8 }, { scaleY: 0.8 }] }}
+              />
+              <Text style={styles.rememberText}>Lembrar de mim</Text>
+            </TouchableOpacity>
+            <TouchableOpacity activeOpacity={0.7}>
+              <Text style={styles.forgotText}>Esqueceu a senha?</Text>
+            </TouchableOpacity>
+          </View>
 
           <Button
             title="Entrar"
@@ -105,13 +162,19 @@ export function LoginScreen({ navigation }: Props) {
             style={styles.loginBtn}
           />
 
+          {/* Google signin button */}
+          <TouchableOpacity style={styles.googleBtn} activeOpacity={0.8}>
+            <Ionicons name="logo-google" size={18} color="#FFFFFF" />
+            <Text style={styles.googleText}>Entrar com Google</Text>
+          </TouchableOpacity>
+
           <View style={styles.registerRow}>
             <Text style={styles.registerText}>Não tem conta? </Text>
             <TouchableOpacity onPress={() => navigation.navigate('Register')}>
               <Text style={styles.registerLink}>Cadastre-se</Text>
             </TouchableOpacity>
           </View>
-        </View>
+        </Animated.View>
 
       </ScrollView>
     </KeyboardAvoidingView>
@@ -122,64 +185,80 @@ const styles = StyleSheet.create({
   root: { flex: 1, backgroundColor: '#0D0D0D' },
   brandArea: {
     alignItems: 'center',
-    paddingBottom: 56,
+    paddingBottom: 52,
     overflow: 'hidden',
   },
-  circle1: {
+  blob1: {
     position: 'absolute',
-    width: 300,
-    height: 300,
-    borderRadius: 150,
-    backgroundColor: '#1C0808',
-    top: -80,
-    right: -90,
+    width: 320,
+    height: 320,
+    borderRadius: 160,
+    backgroundColor: '#1C0506',
+    top: -100,
+    right: -110,
   },
-  circle2: {
+  blob2: {
     position: 'absolute',
-    width: 220,
-    height: 220,
-    borderRadius: 110,
-    backgroundColor: '#150606',
-    top: 0,
-    left: -80,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: '#140404',
+    top: -20,
+    left: -90,
   },
-  circle3: {
+  blob3: {
     position: 'absolute',
-    width: 140,
-    height: 140,
-    borderRadius: 70,
-    backgroundColor: '#240A0A',
-    bottom: 10,
-    right: 30,
+    width: 160,
+    height: 160,
+    borderRadius: 80,
+    backgroundColor: '#1A0707',
+    bottom: 0,
+    right: 20,
   },
   logoContainer: {
-    width: 108,
-    height: 108,
-    borderRadius: 54,
-    backgroundColor: '#8B1A1A',
+    marginBottom: 20,
+    position: 'relative',
+  },
+  logoGradient: {
+    width: 112,
+    height: 112,
+    borderRadius: 32,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 18,
-    shadowColor: '#8B1A1A',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 14,
-    borderWidth: 2,
-    borderColor: '#A52020',
   },
-  logoEmoji: { fontSize: 50 },
+  logoGlow: {
+    position: 'absolute',
+    width: 112,
+    height: 112,
+    borderRadius: 32,
+    borderWidth: 2,
+    borderColor: 'rgba(230,57,70,0.5)',
+    top: 0,
+    left: 0,
+  },
+  logoEmoji: { fontSize: 52 },
   brandName: {
-    color: '#F5F0E8',
-    fontSize: 38,
+    color: '#FFFFFF',
+    fontSize: 40,
     fontWeight: '800',
-    letterSpacing: 1.5,
+    letterSpacing: 1,
+  },
+  locationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 6,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 20,
+    backgroundColor: 'rgba(230,57,70,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(230,57,70,0.2)',
   },
   brandSub: {
-    color: '#6B7280',
+    color: '#A0A0A0',
     fontSize: 11,
-    letterSpacing: 5,
-    marginTop: 6,
+    letterSpacing: 3.5,
     fontWeight: '600',
   },
   formCard: {
@@ -195,29 +274,61 @@ const styles = StyleSheet.create({
     borderColor: '#1E1E1E',
   },
   formTitle: {
-    color: '#F5F0E8',
+    color: '#FFFFFF',
     fontSize: 26,
     fontWeight: '700',
     marginBottom: 4,
   },
   formSub: {
-    color: '#6B7280',
+    color: '#A0A0A0',
     fontSize: 14,
     marginBottom: 28,
   },
+  rowOptions: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: -4,
+    marginBottom: 20,
+  },
+  rememberRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  rememberText: {
+    color: '#A0A0A0',
+    fontSize: 13,
+  },
+  forgotText: {
+    color: '#E63946',
+    fontSize: 13,
+    fontWeight: '600',
+  },
   loginBtn: {
-    marginTop: 8,
-    shadowColor: '#8B1A1A',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.45,
-    shadowRadius: 14,
-    elevation: 8,
+    marginBottom: 14,
+  },
+  googleBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 54,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#2A2A2A',
+    backgroundColor: 'transparent',
+    marginBottom: 20,
+  },
+  googleText: {
+    color: '#FFFFFF',
+    fontSize: 15,
+    fontWeight: '600',
   },
   registerRow: {
     flexDirection: 'row',
     justifyContent: 'center',
-    marginTop: 22,
   },
-  registerText: { color: '#6B7280', fontSize: 14 },
-  registerLink: { color: '#8B1A1A', fontWeight: '700', fontSize: 14 },
+  registerText: { color: '#A0A0A0', fontSize: 14 },
+  registerLink: { color: '#F4A261', fontWeight: '700', fontSize: 14 },
 });

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -24,12 +24,12 @@ const STATUS_FILTERS: {
   icon: React.ComponentProps<typeof Ionicons>['name'];
   color: string;
 }[] = [
-  { label: 'Todos', shortLabel: 'Todos', value: null, icon: 'apps-outline', color: '#C8943C' },
+  { label: 'Todos', shortLabel: 'Todos', value: null, icon: 'apps-outline', color: '#F4A261' },
   { label: 'Pendente', shortLabel: 'Novos', value: 'PENDENTE', icon: 'time-outline', color: '#F59E0B' },
-  { label: 'Preparando', shortLabel: 'Cozinha', value: 'PREPARANDO', icon: 'flame-outline', color: '#EF4444' },
+  { label: 'Preparando', shortLabel: 'Cozinha', value: 'PREPARANDO', icon: 'flame-outline', color: '#E63946' },
   { label: 'Em entrega', shortLabel: 'Entrega', value: 'ENTREGANDO', icon: 'bicycle-outline', color: '#3B82F6' },
-  { label: 'Entregue', shortLabel: 'Prontos', value: 'ENTREGUE', icon: 'checkmark-done-outline', color: '#22C55E' },
-  { label: 'Cancelado', shortLabel: 'Cancel.', value: 'CANCELADO', icon: 'close-circle-outline', color: '#6B7280' },
+  { label: 'Entregue', shortLabel: 'Prontos', value: 'ENTREGUE', icon: 'checkmark-done-outline', color: '#2A9D8F' },
+  { label: 'Cancelado', shortLabel: 'Cancel.', value: 'CANCELADO', icon: 'close-circle-outline', color: '#666666' },
 ];
 
 const NEXT_STATUS: Partial<Record<StatusPedido, StatusPedido[]>> = {
@@ -167,7 +167,7 @@ export function AdminOrdersManagementScreen() {
               setRefreshing(true);
               load();
             }}
-            tintColor="#E32626"
+            tintColor="#E63946"
           />
         }
         contentContainerStyle={styles.listContent}
@@ -260,7 +260,7 @@ export function AdminOrdersManagementScreen() {
                   <View
                     style={[
                       styles.orderMarker,
-                      { backgroundColor: statusConfig?.color ?? '#C8943C' },
+                      { backgroundColor: statusConfig?.color ?? '#F4A261' },
                     ]}
                   />
                   <View>
@@ -292,7 +292,7 @@ export function AdminOrdersManagementScreen() {
               {temProximo ? (
                 <View style={styles.nextAction}>
                   <Text style={styles.nextActionText}>Toque para avançar o status</Text>
-                  <Ionicons name="chevron-forward" size={16} color="#C8943C" />
+                  <Ionicons name="chevron-forward" size={16} color="#F4A261" />
                 </View>
               ) : null}
             </TouchableOpacity>
@@ -335,7 +335,7 @@ const styles = StyleSheet.create({
     borderColor: '#242424',
   },
   eyebrow: {
-    color: '#C8943C',
+    color: '#F4A261',
     fontSize: 12,
     fontWeight: '700',
     textTransform: 'uppercase',
@@ -479,7 +479,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   totalValue: {
-    color: '#C8943C',
+    color: '#F4A261',
     fontSize: 17,
     fontWeight: '900',
     marginTop: 1,
@@ -494,7 +494,7 @@ const styles = StyleSheet.create({
     borderTopColor: '#242424',
   },
   nextActionText: {
-    color: '#C8943C',
+    color: '#F4A261',
     fontSize: 12,
     fontWeight: '700',
   },

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -84,7 +84,7 @@ export function HomeScreen({ navigation }: Props) {
   return (
     <ScrollView
       className="flex-1 bg-dark"
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#8B1A1A" />}
+      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} tintColor="#E63946" />}
       showsVerticalScrollIndicator={false}
     >
       <View style={{ paddingTop: insets.top + 16 }} className="px-4 pb-4 flex-row items-center justify-between">

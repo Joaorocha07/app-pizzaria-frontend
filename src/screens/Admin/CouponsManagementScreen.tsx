@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -64,7 +64,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AdminCouponForm', {})}
             className="p-2"
           >
-            <Ionicons name="add-circle" size={28} color="#8B1A1A" />
+            <Ionicons name="add-circle" size={28} color="#E63946" />
           </TouchableOpacity>
         }
       />
@@ -75,7 +75,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#8B1A1A"
+            tintColor="#E63946"
           />
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -90,7 +90,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
           <View className="bg-dark-card rounded-2xl p-4 mb-3">
             <View className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center gap-2">
-                <Ionicons name="pricetag-outline" size={16} color="#C8943C" />
+                <Ionicons name="pricetag-outline" size={16} color="#F4A261" />
                 <Text className="text-offwhite font-bold text-base">{item.codigo}</Text>
               </View>
               <View className={`px-2 py-0.5 rounded-full ${item.ativo ? 'bg-green-900' : 'bg-gray-800'}`}>
@@ -120,7 +120,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
                   onPress={() => navigation.navigate('AdminCouponForm', { couponId: item.id })}
                   className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
                 >
-                  <Ionicons name="create-outline" size={18} color="#C8943C" />
+                  <Ionicons name="create-outline" size={18} color="#F4A261" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}

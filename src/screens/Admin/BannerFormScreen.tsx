@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+﻿import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Switch, Alert } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -105,7 +105,7 @@ export function AdminBannerFormScreen({ navigation, route }: Props) {
             value={ativo}
             onValueChange={setAtivo}
             trackColor={{ false: '#374151', true: '#7F1212' }}
-            thumbColor={ativo ? '#8B1A1A' : '#6B7280'}
+            thumbColor={ativo ? '#E63946' : '#6B7280'}
           />
         </View>
         <Button

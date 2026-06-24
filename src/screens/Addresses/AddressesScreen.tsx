@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -62,7 +62,7 @@ export function AddressesScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AddressForm', {})}
             style={{ width: 44, alignItems: 'flex-end' }}
           >
-            <Ionicons name="add-circle-outline" size={26} color="#8B1A1A" />
+            <Ionicons name="add-circle-outline" size={26} color="#E63946" />
           </TouchableOpacity>
         }
       />
@@ -71,7 +71,7 @@ export function AddressesScreen({ navigation }: Props) {
         data={enderecos}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#8B1A1A" />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#E63946" />
         }
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         ListEmptyComponent={

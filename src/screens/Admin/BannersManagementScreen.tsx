@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl, Alert, Image } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -60,7 +60,7 @@ export function AdminBannersManagementScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AdminBannerForm', {})}
             className="p-2"
           >
-            <Ionicons name="add-circle" size={28} color="#8B1A1A" />
+            <Ionicons name="add-circle" size={28} color="#E63946" />
           </TouchableOpacity>
         }
       />
@@ -71,7 +71,7 @@ export function AdminBannersManagementScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#8B1A1A"
+            tintColor="#E63946"
           />
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -106,7 +106,7 @@ export function AdminBannersManagementScreen({ navigation }: Props) {
                   onPress={() => navigation.navigate('AdminBannerForm', { bannerId: item.id })}
                   className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
                 >
-                  <Ionicons name="create-outline" size={18} color="#C8943C" />
+                  <Ionicons name="create-outline" size={18} color="#F4A261" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}

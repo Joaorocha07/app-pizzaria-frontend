@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+﻿import React, { useState, useEffect, useCallback } from 'react';
 import { View, Text, FlatList, TouchableOpacity, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -52,7 +52,7 @@ export function OrdersScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#8B1A1A"
+            tintColor="#E63946"
           />
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -71,7 +71,7 @@ export function OrdersScreen({ navigation }: Props) {
           >
             <View className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center gap-2">
-                <Ionicons name="receipt-outline" size={16} color="#C8943C" />
+                <Ionicons name="receipt-outline" size={16} color="#F4A261" />
                 <Text className="text-offwhite font-bold">Pedido {formatOrderId(item.id)}</Text>
               </View>
               <OrderStatusBadge status={item.status} />

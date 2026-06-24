@@ -88,13 +88,13 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   title: {
-    color: '#F5F0E8',
+    color: '#FFFFFF',
     fontSize: 18,
     fontWeight: '700',
     letterSpacing: 0.2,
   },
   subtitle: {
-    color: '#9CA3AF',
+    color: '#A0A0A0',
     fontSize: 12,
     marginTop: 1,
   },

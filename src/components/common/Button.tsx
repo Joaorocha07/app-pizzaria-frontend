@@ -1,5 +1,14 @@
-import React from 'react';
-import { TouchableOpacity, Text, ActivityIndicator, StyleSheet, ViewStyle, TouchableOpacityProps } from 'react-native';
+import React, { useRef } from 'react';
+import {
+  TouchableOpacity,
+  Text,
+  ActivityIndicator,
+  StyleSheet,
+  ViewStyle,
+  TouchableOpacityProps,
+  Animated,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -9,17 +18,17 @@ interface ButtonProps extends TouchableOpacityProps {
   style?: ViewStyle;
 }
 
-const VARIANT: Record<string, { bg: string; text: string; border?: string; shadow?: string }> = {
-  primary:   { bg: '#8B1A1A', text: '#F5F0E8', shadow: '#8B1A1A' },
-  secondary: { bg: '#C8943C', text: '#0D0D0D', shadow: '#C8943C' },
-  outline:   { bg: 'transparent', text: '#8B1A1A', border: '#8B1A1A' },
-  ghost:     { bg: 'transparent', text: '#8B1A1A' },
+const VARIANT: Record<string, { gradient?: [string, string]; bg: string; text: string; border?: string }> = {
+  primary:   { gradient: ['#E63946', '#D62839'], bg: '#E63946', text: '#FFFFFF' },
+  secondary: { gradient: ['#F4A261', '#E8884A'], bg: '#F4A261', text: '#0D0D0D' },
+  outline:   { bg: 'transparent', text: '#E63946', border: '#E63946' },
+  ghost:     { bg: 'transparent', text: '#E63946' },
 };
 
 const SIZE: Record<string, { paddingVertical: number; paddingHorizontal: number; borderRadius: number; fontSize: number }> = {
-  sm: { paddingVertical: 8,  paddingHorizontal: 16, borderRadius: 10, fontSize: 13 },
-  md: { paddingVertical: 12, paddingHorizontal: 24, borderRadius: 14, fontSize: 15 },
-  lg: { paddingVertical: 16, paddingHorizontal: 32, borderRadius: 16, fontSize: 17 },
+  sm: { paddingVertical: 9,  paddingHorizontal: 16, borderRadius: 12, fontSize: 13 },
+  md: { paddingVertical: 13, paddingHorizontal: 24, borderRadius: 14, fontSize: 15 },
+  lg: { paddingVertical: 17, paddingHorizontal: 32, borderRadius: 16, fontSize: 17 },
 };
 
 export function Button({
@@ -29,51 +38,106 @@ export function Button({
   loading = false,
   disabled,
   style,
+  onPress,
   ...props
 }: ButtonProps) {
   const v = VARIANT[variant];
   const s = SIZE[size];
   const isDisabled = disabled || loading;
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function handlePressIn() {
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 50 }).start();
+  }
+
+  function handlePressOut() {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 50 }).start();
+  }
+
+  const inner = loading ? (
+    <ActivityIndicator color={v.text} size="small" />
+  ) : (
+    <Text style={[styles.text, { color: v.text, fontSize: s.fontSize }]}>{title}</Text>
+  );
+
+  if (v.gradient && !isDisabled) {
+    return (
+      <Animated.View style={[{ transform: [{ scale }] }, style]}>
+        <TouchableOpacity
+          disabled={isDisabled}
+          onPress={onPress}
+          onPressIn={handlePressIn}
+          onPressOut={handlePressOut}
+          activeOpacity={1}
+          style={[
+            styles.base,
+            {
+              borderRadius: s.borderRadius,
+              shadowColor: '#E63946',
+              shadowOffset: { width: 0, height: 8 },
+              shadowOpacity: 0.35,
+              shadowRadius: 16,
+              elevation: 8,
+            },
+          ]}
+          {...props}
+        >
+          <LinearGradient
+            colors={v.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[
+              styles.gradient,
+              {
+                paddingVertical: s.paddingVertical,
+                paddingHorizontal: s.paddingHorizontal,
+                borderRadius: s.borderRadius,
+              },
+            ]}
+          >
+            {inner}
+          </LinearGradient>
+        </TouchableOpacity>
+      </Animated.View>
+    );
+  }
 
   return (
-    <TouchableOpacity
-      disabled={isDisabled}
-      activeOpacity={0.8}
-      style={[
-        styles.base,
-        {
-          backgroundColor: v.bg,
-          paddingVertical: s.paddingVertical,
-          paddingHorizontal: s.paddingHorizontal,
-          borderRadius: s.borderRadius,
-          borderWidth: v.border ? 1.5 : 0,
-          borderColor: v.border ?? 'transparent',
-          opacity: isDisabled ? 0.5 : 1,
-        },
-        v.shadow && !isDisabled ? {
-          shadowColor: v.shadow,
-          shadowOffset: { width: 0, height: 5 },
-          shadowOpacity: 0.35,
-          shadowRadius: 10,
-          elevation: 6,
-        } : {},
-        style,
-      ]}
-      {...props}
-    >
-      {loading ? (
-        <ActivityIndicator color={v.text} size="small" />
-      ) : (
-        <Text style={[styles.text, { color: v.text, fontSize: s.fontSize }]}>
-          {title}
-        </Text>
-      )}
-    </TouchableOpacity>
+    <Animated.View style={[{ transform: [{ scale }], opacity: isDisabled ? 0.5 : 1 }, style]}>
+      <TouchableOpacity
+        disabled={isDisabled}
+        onPress={onPress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+        activeOpacity={0.85}
+        style={[
+          styles.base,
+          {
+            backgroundColor: v.bg,
+            paddingVertical: s.paddingVertical,
+            paddingHorizontal: s.paddingHorizontal,
+            borderRadius: s.borderRadius,
+            borderWidth: v.border ? 1.5 : 0,
+            borderColor: v.border ?? 'transparent',
+          },
+        ]}
+        {...props}
+      >
+        {inner}
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
   base: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  gradient: {
+    width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',

@@ -1,4 +1,4 @@
-import React from 'react';
+﻿import React from 'react';
 import { TouchableOpacity, Text, View, StyleSheet } from 'react-native';
 import { Categoria } from '../../types';
 
@@ -41,9 +41,9 @@ const styles = StyleSheet.create({
     borderColor: '#2A2A2A',
   },
   chipSelected: {
-    backgroundColor: '#8B1A1A',
-    borderColor: '#A52020',
-    shadowColor: '#8B1A1A',
+    backgroundColor: '#E63946',
+    borderColor: '#FF4D5A',
+    shadowColor: '#E63946',
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.4,
     shadowRadius: 6,

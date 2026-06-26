@@ -2,6 +2,7 @@
 import { View, Text, FlatList, TouchableOpacity, Alert, RefreshControl } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/userService';
 import { Endereco } from '../../types';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export function AddressesScreen({ navigation }: Props) {
+  const { colors } = useTheme();
   const [enderecos, setEnderecos] = useState<Endereco[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -53,7 +55,7 @@ export function AddressesScreen({ navigation }: Props) {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header
         title="Endereços"
         onBack={() => navigation.goBack()}
@@ -76,35 +78,36 @@ export function AddressesScreen({ navigation }: Props) {
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         ListEmptyComponent={
           <View className="items-center py-12">
-            <Text className="text-4xl mb-3">📍</Text>
-            <Text className="text-offwhite text-base font-bold mb-1">Nenhum endereço</Text>
-            <Text className="text-gray-400 text-center">Adicione um endereço de entrega</Text>
+            <Ionicons name="location-outline" size={48} color={colors.textMuted} style={{ marginBottom: 12 }} />
+            <Text className="text-base font-bold mb-1" style={{ color: colors.text }}>Nenhum endereço</Text>
+            <Text className="text-center" style={{ color: colors.textSecondary }}>Adicione um endereço de entrega</Text>
           </View>
         }
         renderItem={({ item }) => (
-          <View className="bg-dark-card rounded-2xl p-4 mb-3">
+          <View className="rounded-2xl p-4 mb-3" style={{ backgroundColor: colors.bgElevated }}>
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
-                <Text className="text-offwhite font-semibold">
+                <Text className="font-semibold" style={{ color: colors.text }}>
                   {item.rua}, {item.numero}
                 </Text>
                 {item.complemento && (
-                  <Text className="text-gray-400 text-xs">{item.complemento}</Text>
+                  <Text className="text-xs" style={{ color: colors.textSecondary }}>{item.complemento}</Text>
                 )}
-                <Text className="text-gray-400 text-xs">
+                <Text className="text-xs" style={{ color: colors.textSecondary }}>
                   {item.bairro} — {item.cidade}/{item.estado}
                 </Text>
-                <Text className="text-gray-500 text-xs">CEP: {item.cep}</Text>
+                <Text className="text-xs" style={{ color: colors.textMuted }}>CEP: {item.cep}</Text>
                 {item.padrao && (
-                  <Text className="text-accent text-xs font-semibold mt-1">Padrão</Text>
+                  <Text className="text-xs font-semibold mt-1" style={{ color: colors.accent }}>Padrão</Text>
                 )}
               </View>
               <View className="gap-2 ml-2">
                 <TouchableOpacity
                   onPress={() => navigation.navigate('AddressForm', { address: item })}
-                  className="bg-dark-border rounded-lg px-3 py-1"
+                  className="rounded-lg px-3 py-1"
+                  style={{ backgroundColor: colors.bgInput }}
                 >
-                  <Text className="text-offwhite text-xs">Editar</Text>
+                  <Text className="text-xs" style={{ color: colors.text }}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item.id)}

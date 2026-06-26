@@ -1,6 +1,9 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { TabNavigator } from './TabNavigator';
+import { PizzaSizeScreen } from '../screens/Menu/PizzaSizeScreen';
+import { PizzaFlavorScreen } from '../screens/Menu/PizzaFlavorScreen';
+import { PizzaExtrasScreen } from '../screens/Menu/PizzaExtrasScreen';
 import { ProductDetailsScreen } from '../screens/Products/ProductDetailsScreen';
 import { CartScreen } from '../screens/Cart/CartScreen';
 import { CheckoutScreen } from '../screens/Checkout/CheckoutScreen';
@@ -29,6 +32,9 @@ export function AppNavigator() {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
       <Stack.Screen name="MainTabs" component={TabNavigator} />
+      <Stack.Screen name="PizzaSize" component={PizzaSizeScreen} />
+      <Stack.Screen name="PizzaFlavor" component={PizzaFlavorScreen} />
+      <Stack.Screen name="PizzaExtras" component={PizzaExtrasScreen} />
       <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
       <Stack.Screen name="Cart" component={CartScreen} />
       <Stack.Screen name="Checkout" component={CheckoutScreen} />

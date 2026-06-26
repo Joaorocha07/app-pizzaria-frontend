@@ -64,12 +64,12 @@ export const adminService = {
 
   // ─── Categorias ────────────────────────────────────────────────────────────
 
-  async createCategory(payload: { nome: string; icone?: string; ordem: number; ativo?: boolean }): Promise<Categoria> {
+  async createCategory(payload: { nome: string; icone?: string; urlImagem?: string; ordem: number; ativo?: boolean }): Promise<Categoria> {
     const { data } = await api.post<Categoria>('/admin/categories', payload);
     return data;
   },
 
-  async updateCategory(id: number, payload: Partial<{ nome: string; icone: string; ordem: number; ativo: boolean }>): Promise<Categoria> {
+  async updateCategory(id: number, payload: Partial<{ nome: string; icone: string; urlImagem: string; ordem: number; ativo: boolean }>): Promise<Categoria> {
     const { data } = await api.put<Categoria>(`/admin/categories/${id}`, payload);
     return data;
   },
@@ -80,12 +80,12 @@ export const adminService = {
 
   // ─── Bordas ────────────────────────────────────────────────────────────────
 
-  async createCrust(payload: { nome: string; preco: number }): Promise<Borda> {
+  async createCrust(payload: { nome: string; preco: number; urlImagem?: string }): Promise<Borda> {
     const { data } = await api.post<Borda>('/admin/crusts', payload);
     return data;
   },
 
-  async updateCrust(id: number, payload: Partial<{ nome: string; preco: number }>): Promise<Borda> {
+  async updateCrust(id: number, payload: Partial<{ nome: string; preco: number; urlImagem: string }>): Promise<Borda> {
     const { data } = await api.put<Borda>(`/admin/crusts/${id}`, payload);
     return data;
   },

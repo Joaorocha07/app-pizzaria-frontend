@@ -20,6 +20,9 @@ import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
 import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { AppStackParamList } from '../../navigation/types';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { AppColors } from '../../theme/colors';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
@@ -45,6 +48,8 @@ function FloatingInput({
   prefix?: string;
   maxLength?: number;
 }) {
+  const { colors } = useTheme();
+  const fi = React.useMemo(() => createFiStyles(colors), [colors]);
   return (
     <View style={fi.wrapper}>
       <Text style={fi.label}>{label}</Text>
@@ -52,7 +57,7 @@ function FloatingInput({
         {prefix ? <Text style={fi.prefix}>{prefix}</Text> : null}
         <TextInput
           style={[fi.input, multiline && fi.multilineInput, value ? fi.inputFilled : {}]}
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           placeholder={placeholder}
           value={value}
           onChangeText={onChangeText}
@@ -69,21 +74,26 @@ function FloatingInput({
   );
 }
 
-const fi = StyleSheet.create({
-  wrapper: { marginBottom: 16 },
-  label: { color: '#A0A0A0', fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
-  row: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#1A1A1A', borderRadius: 16, borderWidth: 1, borderColor: '#2A2A2A', paddingHorizontal: 16 },
-  multilineRow: { alignItems: 'flex-start', paddingTop: 12 },
-  prefix: { color: '#2A9D8F', fontSize: 16, fontWeight: '700', marginRight: 6 },
-  input: { flex: 1, color: '#FFFFFF', fontSize: 15, paddingVertical: 16 },
-  inputFilled: { color: '#FFFFFF' },
-  multilineInput: { minHeight: 96, paddingVertical: 0 },
-  counter: { color: '#666666', fontSize: 11, textAlign: 'right', marginTop: 4 },
-});
+function createFiStyles(c: AppColors) {
+  return StyleSheet.create({
+    wrapper: { marginBottom: 16 },
+    label: { color: c.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
+    row: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.bgInput, borderRadius: 16, borderWidth: 1, borderColor: c.borderStrong, paddingHorizontal: 16 },
+    multilineRow: { alignItems: 'flex-start', paddingTop: 12 },
+    prefix: { color: '#2A9D8F', fontSize: 16, fontWeight: '700', marginRight: 6 },
+    input: { flex: 1, color: c.text, fontSize: 15, paddingVertical: 16 },
+    inputFilled: { color: c.text },
+    multilineInput: { minHeight: 96, paddingVertical: 0 },
+    counter: { color: c.textMuted, fontSize: 11, textAlign: 'right', marginTop: 4 },
+  });
+}
 
 export function AdminProductFormScreen({ navigation, route }: Props) {
   const { productId } = route.params ?? {};
   const isEditing = !!productId;
+  const { isAdmin } = useAuth();
+  const { colors } = useTheme();
+  const s = React.useMemo(() => createStyles(colors), [colors]);
 
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(isEditing);
@@ -173,6 +183,9 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
   }
 
   async function handleSave() {
+    if (!isAdmin) {
+      return Alert.alert('Sem permissão', 'Apenas administradores podem cadastrar ou editar produtos.');
+    }
     if (!nome.trim()) return Alert.alert('Atenção', 'Nome é obrigatório.');
     const precoNum = Number(preco.replace(',', '.'));
     if (!preco || isNaN(precoNum) || precoNum <= 0) {
@@ -180,12 +193,16 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
     }
     if (!categoriaId) return Alert.alert('Atenção', 'Selecione uma categoria.');
 
+    // Only send urlImagem if it's a remote HTTP URL; local file:// URIs from the
+    // image picker are not accepted by the server and cause a 400 error.
+    const remoteImageUrl = urlImagem.trim().startsWith('http') ? urlImagem.trim() : undefined;
+
     setSaving(true);
     try {
       const payload = {
         nome: nome.trim(),
         descricao: descricao.trim() || undefined,
-        urlImagem: urlImagem.trim() || undefined,
+        urlImagem: remoteImageUrl,
         preco: precoNum,
         categoriaId,
         disponivel,
@@ -335,173 +352,37 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
   );
 }
 
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0D0D0D' },
-  scroll: { flex: 1 },
-  scrollContent: { padding: 16, paddingBottom: 48 },
-
-  imageArea: {
-    marginBottom: 24,
-    borderRadius: 20,
-    overflow: 'hidden',
-    height: 200,
-  },
-  imagePlaceholder: {
-    height: 200,
-    backgroundColor: '#1A1A1A',
-    borderRadius: 20,
-    borderWidth: 2,
-    borderStyle: 'dashed',
-    borderColor: '#2A2A2A',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  cameraIconWrapper: {
-    width: 68,
-    height: 68,
-    borderRadius: 34,
-    backgroundColor: '#242424',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 4,
-  },
-  imagePlaceholderText: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  imagePlaceholderSub: {
-    color: '#666666',
-    fontSize: 12,
-  },
-  imagePreviewWrapper: {
-    height: 200,
-    position: 'relative',
-  },
-  imagePreview: {
-    width: '100%',
-    height: 200,
-    borderRadius: 20,
-  },
-  imageOverlay: {
-    position: 'absolute',
-    inset: 0,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  imageOverlayText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  imageRemoveBtn: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#E63946',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  sectionLabel: {
-    color: '#A0A0A0',
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: 10,
-  },
-  catGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginBottom: 20,
-  },
-  catChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 9,
-    borderRadius: 20,
-    backgroundColor: '#1A1A1A',
-    borderWidth: 1,
-    borderColor: '#2A2A2A',
-  },
-  catChipActive: {
-    backgroundColor: 'rgba(230,57,70,0.15)',
-    borderColor: '#E63946',
-  },
-  catChipText: {
-    color: '#A0A0A0',
-    fontSize: 13,
-    fontWeight: '600',
-  },
-  catChipTextActive: {
-    color: '#E63946',
-  },
-
-  toggleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1A1A1A',
-    borderRadius: 16,
-    padding: 14,
-    marginBottom: 20,
-    borderWidth: 1,
-    borderColor: '#2A2A2A',
-    gap: 12,
-  },
-  toggleRowActive: {
-    borderColor: 'rgba(42,157,143,0.3)',
-    backgroundColor: 'rgba(42,157,143,0.06)',
-  },
-  toggleIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  toggleTextWrapper: { flex: 1 },
-  toggleLabel: {
-    color: '#A0A0A0',
-    fontSize: 14,
-    fontWeight: '700',
-  },
-  toggleLabelActive: { color: '#FFFFFF' },
-  toggleSub: {
-    color: '#666666',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  switchTrack: {
-    width: 44,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#2A2A2A',
-    justifyContent: 'center',
-    paddingHorizontal: 2,
-  },
-  switchTrackActive: { backgroundColor: '#2A9D8F' },
-  switchThumb: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: '#666666',
-    alignSelf: 'flex-start',
-  },
-  switchThumbActive: {
-    backgroundColor: '#FFFFFF',
-    alignSelf: 'flex-end',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 4,
-  },
-});
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bg },
+    scroll: { flex: 1 },
+    scrollContent: { padding: 16, paddingBottom: 48 },
+    imageArea: { marginBottom: 24, borderRadius: 20, overflow: 'hidden', height: 200 },
+    imagePlaceholder: { height: 200, backgroundColor: c.bgInput, borderRadius: 20, borderWidth: 2, borderStyle: 'dashed', borderColor: c.borderStrong, alignItems: 'center', justifyContent: 'center', gap: 8 },
+    cameraIconWrapper: { width: 68, height: 68, borderRadius: 34, backgroundColor: c.bgElevated, alignItems: 'center', justifyContent: 'center', marginBottom: 4 },
+    imagePlaceholderText: { color: c.textSecondary, fontSize: 14, fontWeight: '600' },
+    imagePlaceholderSub: { color: c.textMuted, fontSize: 12 },
+    imagePreviewWrapper: { height: 200, position: 'relative' },
+    imagePreview: { width: '100%', height: 200, borderRadius: 20 },
+    imageOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 6 },
+    imageOverlayText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
+    imageRemoveBtn: { position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 14, backgroundColor: '#E63946', alignItems: 'center', justifyContent: 'center' },
+    sectionLabel: { color: c.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
+    catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+    catChip: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.borderStrong },
+    catChipActive: { backgroundColor: 'rgba(230,57,70,0.15)', borderColor: '#E63946' },
+    catChipText: { color: c.textSecondary, fontSize: 13, fontWeight: '600' },
+    catChipTextActive: { color: '#E63946' },
+    toggleRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.bgInput, borderRadius: 16, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: c.borderStrong, gap: 12 },
+    toggleRowActive: { borderColor: 'rgba(42,157,143,0.3)', backgroundColor: 'rgba(42,157,143,0.06)' },
+    toggleIconWrapper: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    toggleTextWrapper: { flex: 1 },
+    toggleLabel: { color: c.textSecondary, fontSize: 14, fontWeight: '700' },
+    toggleLabelActive: { color: c.text },
+    toggleSub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
+    switchTrack: { width: 44, height: 24, borderRadius: 12, backgroundColor: c.borderStrong, justifyContent: 'center', paddingHorizontal: 2 },
+    switchTrackActive: { backgroundColor: '#2A9D8F' },
+    switchThumb: { width: 20, height: 20, borderRadius: 10, backgroundColor: c.textMuted, alignSelf: 'flex-start' },
+    switchThumbActive: { backgroundColor: '#FFFFFF', alignSelf: 'flex-end', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
+  });
+}

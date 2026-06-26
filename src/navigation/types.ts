@@ -7,6 +7,7 @@ export type AuthStackParamList = {
 
 export type AppTabParamList = {
   Home: undefined;
+  Cardapio: undefined;
   Pedidos: undefined;
   AdminPedidos: undefined;
   AdminProdutos: undefined;
@@ -17,6 +18,9 @@ export type AppTabParamList = {
 
 export type AppStackParamList = {
   MainTabs: { screen?: keyof AppTabParamList };
+  PizzaSize: { categoryId: number; categoryName: string; categoryIcon?: string };
+  PizzaFlavor: { categoryId: number; categoryName: string; sizeName: string };
+  PizzaExtras: { product1Id: number; product2Id: number; sizeName: string; categoryName: string };
   ProductDetails: { productId: number };
   Cart: undefined;
   Checkout: undefined;

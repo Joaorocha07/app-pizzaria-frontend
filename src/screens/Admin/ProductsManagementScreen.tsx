@@ -16,12 +16,16 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Header } from '../../components/common/Header';
 import { formatCurrency } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
+import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
 };
 
 export function AdminProductsManagementScreen({ navigation }: Props) {
+  const { isAdmin } = useAuth();
+  const { colors } = useTheme();
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -78,16 +82,18 @@ export function AdminProductsManagementScreen({ navigation }: Props) {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header
         title="Produtos"
         rightElement={
-          <TouchableOpacity
-            onPress={() => navigation.navigate('AdminProductForm', {})}
-            className="p-2"
-          >
-            <Ionicons name="add-circle" size={28} color="#E63946" />
-          </TouchableOpacity>
+          isAdmin ? (
+            <TouchableOpacity
+              onPress={() => navigation.navigate('AdminProductForm', {})}
+              className="p-2"
+            >
+              <Ionicons name="add-circle" size={28} color="#E63946" />
+            </TouchableOpacity>
+          ) : undefined
         }
       />
 
@@ -108,7 +114,7 @@ export function AdminProductsManagementScreen({ navigation }: Props) {
         ListEmptyComponent={
           <View className="items-center py-16">
             <Ionicons name="cube-outline" size={64} color="#6B7280" />
-            <Text className="text-offwhite text-lg font-bold mt-4 mb-1">
+            <Text className="text-lg font-bold mt-4 mb-1" style={{ color: colors.text }}>
               Nenhum produto cadastrado
             </Text>
             <Text className="text-gray-400 text-center">
@@ -117,10 +123,10 @@ export function AdminProductsManagementScreen({ navigation }: Props) {
           </View>
         }
         renderItem={({ item }) => (
-          <View className="bg-dark-card rounded-2xl p-4 mb-3">
+          <View className="rounded-2xl p-4 mb-3" style={{ backgroundColor: colors.bgElevated }}>
             <View className="flex-row items-center justify-between mb-1">
               <View className="flex-1 mr-3">
-                <Text className="text-offwhite font-bold text-base" numberOfLines={1}>
+                <Text className="font-bold text-base" style={{ color: colors.text }} numberOfLines={1}>
                   {item.nome}
                 </Text>
                 {item.categoria && (
@@ -157,20 +163,22 @@ export function AdminProductsManagementScreen({ navigation }: Props) {
                 </Text>
               </TouchableOpacity>
 
-              <View className="flex-row gap-2">
-                <TouchableOpacity
-                  onPress={() => navigation.navigate('AdminProductForm', { productId: item.id })}
-                  className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
-                >
-                  <Ionicons name="create-outline" size={18} color="#F4A261" />
-                </TouchableOpacity>
-                <TouchableOpacity
-                  onPress={() => handleDelete(item)}
-                  className="w-9 h-9 bg-red-900/30 rounded-xl items-center justify-center"
-                >
-                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
-                </TouchableOpacity>
-              </View>
+              {isAdmin && (
+                <View className="flex-row gap-2">
+                  <TouchableOpacity
+                    onPress={() => navigation.navigate('AdminProductForm', { productId: item.id })}
+                    className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
+                  >
+                    <Ionicons name="create-outline" size={18} color="#C9A227" />
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => handleDelete(item)}
+                    className="w-9 h-9 bg-red-900/30 rounded-xl items-center justify-center"
+                  >
+                    <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                  </TouchableOpacity>
+                </View>
+              )}
             </View>
           </View>
         )}

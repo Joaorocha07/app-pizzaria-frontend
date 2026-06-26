@@ -39,6 +39,7 @@ export interface Categoria {
   id: number;
   nome: string;
   icone?: string;
+  urlImagem?: string;
   ordem: number;
   ativo: boolean;
 }
@@ -65,6 +66,7 @@ export interface Borda {
   id: number;
   nome: string;
   preco: number;
+  urlImagem?: string;
 }
 
 export interface Pedido {

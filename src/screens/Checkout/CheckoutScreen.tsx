@@ -7,6 +7,8 @@ import {
   Alert,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Header } from '../../components/common/Header';
 import { useCart } from '../../contexts/CartContext';
 import { userService } from '../../services/userService';
@@ -21,14 +23,15 @@ type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList, 'Checkout'>;
 };
 
-const METODOS: { value: MetodoPagamento; label: string; emoji: string }[] = [
-  { value: 'PIX', label: 'PIX', emoji: '📱' },
-  { value: 'CARTAO', label: 'Cartão', emoji: '💳' },
-  { value: 'DINHEIRO', label: 'Dinheiro', emoji: '💵' },
+const METODOS: { value: MetodoPagamento; label: string; icon: keyof typeof Ionicons.glyphMap }[] = [
+  { value: 'PIX', label: 'PIX', icon: 'phone-portrait-outline' },
+  { value: 'CARTAO', label: 'Cartão', icon: 'card-outline' },
+  { value: 'DINHEIRO', label: 'Dinheiro', icon: 'cash-outline' },
 ];
 
 export function CheckoutScreen({ navigation }: Props) {
   const { itens, total, cupom, clearCart } = useCart();
+  const { colors } = useTheme();
   const [enderecos, setEnderecos] = useState<Endereco[]>([]);
   const [selectedEndereco, setSelectedEndereco] = useState<Endereco | null>(null);
   const [metodoPagamento, setMetodoPagamento] = useState<MetodoPagamento>('PIX');
@@ -78,12 +81,12 @@ export function CheckoutScreen({ navigation }: Props) {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title="Finalizar pedido" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
         <View className="mb-4">
-          <Text className="text-offwhite font-bold text-base mb-3">Endereço de entrega</Text>
+          <Text className="font-bold text-base mb-3" style={{ color: colors.text }}>Endereço de entrega</Text>
           {enderecos.length === 0 ? (
             <TouchableOpacity
               className="bg-dark-card border border-dashed border-primary rounded-2xl p-4 items-center"
@@ -97,13 +100,14 @@ export function CheckoutScreen({ navigation }: Props) {
                 <TouchableOpacity
                   key={end.id}
                   onPress={() => setSelectedEndereco(end)}
-                  className={`bg-dark-card rounded-2xl p-4 mb-2 border ${
-                    selectedEndereco?.id === end.id ? 'border-primary' : 'border-dark-border'
+                  className={`rounded-2xl p-4 mb-2 border ${
+                    selectedEndereco?.id === end.id ? 'border-primary' : ''
                   }`}
+                  style={{ backgroundColor: colors.bgElevated, borderColor: selectedEndereco?.id === end.id ? colors.primary : colors.border }}
                 >
                   <View className="flex-row items-center justify-between">
                     <View className="flex-1">
-                      <Text className="text-offwhite font-semibold">
+                      <Text className="font-semibold" style={{ color: colors.text }}>
                         {end.rua}, {end.numero}
                       </Text>
                       {end.complemento && (
@@ -139,17 +143,16 @@ export function CheckoutScreen({ navigation }: Props) {
         </View>
 
         <View className="mb-4">
-          <Text className="text-offwhite font-bold text-base mb-3">Forma de pagamento</Text>
+          <Text className="font-bold text-base mb-3" style={{ color: colors.text }}>Forma de pagamento</Text>
           <View className="flex-row gap-3">
             {METODOS.map((m) => (
               <TouchableOpacity
                 key={m.value}
                 onPress={() => setMetodoPagamento(m.value)}
-                className={`flex-1 bg-dark-card rounded-2xl p-3 items-center border ${
-                  metodoPagamento === m.value ? 'border-primary' : 'border-dark-border'
-                }`}
+                className="flex-1 rounded-2xl p-3 items-center border"
+                style={{ backgroundColor: colors.bgElevated, borderColor: metodoPagamento === m.value ? colors.primary : colors.border }}
               >
-                <Text className="text-2xl mb-1">{m.emoji}</Text>
+                <Ionicons name={m.icon} size={24} color={metodoPagamento === m.value ? '#C0392B' : '#6B7280'} style={{ marginBottom: 4 }} />
                 <Text className={`text-sm font-bold ${metodoPagamento === m.value ? 'text-primary' : 'text-gray-400'}`}>
                   {m.label}
                 </Text>
@@ -158,27 +161,27 @@ export function CheckoutScreen({ navigation }: Props) {
           </View>
         </View>
 
-        <View className="bg-dark-card rounded-2xl p-4 mb-8">
-          <Text className="text-offwhite font-bold mb-3">Resumo do pedido</Text>
+        <View className="rounded-2xl p-4 mb-8" style={{ backgroundColor: colors.bgElevated }}>
+          <Text className="font-bold mb-3" style={{ color: colors.text }}>Resumo do pedido</Text>
           {itens.map((item, i) => (
             <View key={i} className="flex-row justify-between mb-1">
-              <Text className="text-gray-400 text-sm flex-1" numberOfLines={1}>
+              <Text className="text-sm flex-1" style={{ color: colors.textSecondary }} numberOfLines={1}>
                 {item.quantidade}x {item.produto.nome}
               </Text>
-              <Text className="text-offwhite text-sm ml-2">
+              <Text className="text-sm ml-2" style={{ color: colors.text }}>
                 {formatCurrency(item.precoUnitario * item.quantidade)}
               </Text>
             </View>
           ))}
-          <View className="h-px bg-dark-border my-3" />
+          <View className="h-px my-3" style={{ backgroundColor: colors.border }} />
           <View className="flex-row justify-between">
-            <Text className="text-offwhite font-bold">Total</Text>
-            <Text className="text-accent font-bold text-lg">{formatCurrency(total)}</Text>
+            <Text className="font-bold" style={{ color: colors.text }}>Total</Text>
+            <Text className="font-bold text-lg" style={{ color: colors.accent }}>{formatCurrency(total)}</Text>
           </View>
         </View>
       </ScrollView>
 
-      <View className="px-4 pb-8 pt-4 bg-dark border-t border-dark-border">
+      <View className="px-4 pb-8 pt-4 border-t" style={{ backgroundColor: colors.bg, borderTopColor: colors.border }}>
         <Button
           title={`Confirmar pedido — ${formatCurrency(total)}`}
           onPress={handlePlaceOrder}

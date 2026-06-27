@@ -10,6 +10,7 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { useCart } from '../../contexts/CartContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { productService } from '../../services/productService';
 import { marketingService } from '../../services/marketingService';
 import { Produto, TamanhoProduto, Borda } from '../../types';
@@ -28,6 +29,7 @@ type Props = {
 export function ProductDetailsScreen({ navigation, route }: Props) {
   const { productId } = route.params;
   const { addItem } = useCart();
+  const { colors } = useTheme();
 
   const [produto, setProduto] = useState<Produto | null>(null);
   const [tamanhos, setTamanhos] = useState<TamanhoProduto[]>([]);
@@ -70,14 +72,14 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <View className="relative">
           {produto.urlImagem ? (
             <Image source={{ uri: produto.urlImagem }} className="w-full h-72" resizeMode="cover" />
           ) : (
             <View className="w-full h-72 bg-dark-border items-center justify-center">
-              <Text className="text-8xl">🍕</Text>
+              <Ionicons name="pizza-outline" size={80} color="rgba(255,255,255,0.12)" />
             </View>
           )}
           <Header
@@ -89,7 +91,7 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
 
         <View className="px-4 pt-4">
           <View className="flex-row items-start justify-between mb-2">
-            <Text className="text-offwhite text-2xl font-bold flex-1 mr-2">{produto.nome}</Text>
+            <Text className="text-2xl font-bold flex-1 mr-2" style={{ color: colors.text }}>{produto.nome}</Text>
             <Text className="text-accent text-2xl font-bold">{formatCurrency(precoFinal)}</Text>
           </View>
 
@@ -159,8 +161,8 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
             </View>
           )}
 
-          <View className="flex-row items-center justify-between mb-4 bg-dark-card rounded-xl p-4">
-            <Text className="text-offwhite font-bold">Quantidade</Text>
+          <View className="flex-row items-center justify-between mb-4 rounded-xl p-4" style={{ backgroundColor: colors.bgElevated }}>
+            <Text className="font-bold" style={{ color: colors.text }}>Quantidade</Text>
             <View className="flex-row items-center gap-4">
               <TouchableOpacity
                 onPress={() => setQuantidade((q) => Math.max(1, q - 1))}
@@ -180,7 +182,7 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
         </View>
       </ScrollView>
 
-      <View className="px-4 pb-8 pt-4 bg-dark border-t border-dark-border">
+      <View className="px-4 pb-8 pt-4 border-t" style={{ backgroundColor: colors.bg, borderTopColor: colors.border }}>
         <Button
           title={`Adicionar ao carrinho — ${formatCurrency(totalItem)}`}
           onPress={handleAddToCart}

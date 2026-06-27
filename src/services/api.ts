@@ -1,7 +1,7 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'https://app-pizzaria-backend.onrender.com';
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? 'http://192.168.1.5:3333';
 
 export const api = axios.create({
   baseURL: API_BASE_URL,

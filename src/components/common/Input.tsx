@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -28,6 +29,7 @@ export function Input({
   onChangeText,
   ...props
 }: InputProps) {
+  const { colors } = useTheme();
   const [showPassword, setShowPassword] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
@@ -51,7 +53,7 @@ export function Input({
   return (
     <View style={styles.wrapper}>
       {label ? (
-        <Text style={[styles.label, isFocused && styles.labelFocused, error ? styles.labelError : null]}>
+        <Text style={[styles.label, { color: colors.textSecondary }, isFocused && styles.labelFocused, error ? styles.labelError : null]}>
           {label}
         </Text>
       ) : null}
@@ -59,7 +61,7 @@ export function Input({
       <Animated.View
         style={[
           styles.container,
-          { borderColor },
+          { borderColor, backgroundColor: colors.bgInput },
           isFocused && styles.containerFocused,
           error ? styles.containerError : null,
         ]}
@@ -75,10 +77,11 @@ export function Input({
         <TextInput
           style={[
             styles.input,
+            { color: colors.text },
             leftIcon ? styles.inputWithLeft : null,
             isPassword || rightIcon ? styles.inputWithRight : null,
           ]}
-          placeholderTextColor="#555555"
+          placeholderTextColor={colors.textMuted}
           secureTextEntry={isPassword && !showPassword}
           value={value}
           onChangeText={onChangeText}

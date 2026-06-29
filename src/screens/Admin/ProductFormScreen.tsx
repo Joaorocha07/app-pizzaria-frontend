@@ -15,6 +15,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import { adminService } from '../../services/adminService';
 import { productService } from '../../services/productService';
+import { uploadService } from '../../services/uploadService';
 import { Categoria } from '../../types';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
@@ -139,7 +140,7 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
       return;
     }
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
@@ -193,16 +194,21 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
     }
     if (!categoriaId) return Alert.alert('Atenção', 'Selecione uma categoria.');
 
-    // Only send urlImagem if it's a remote HTTP URL; local file:// URIs from the
-    // image picker are not accepted by the server and cause a 400 error.
-    const remoteImageUrl = urlImagem.trim().startsWith('http') ? urlImagem.trim() : undefined;
-
     setSaving(true);
     try {
+      let finalImageUrl: string | undefined;
+
+      if (imageUri && !imageUri.startsWith('http')) {
+        finalImageUrl = await uploadService.uploadImage(imageUri, 'products');
+        console.log('[Upload] URL retornada pelo backend:', finalImageUrl);
+      } else if (imageUri?.startsWith('http')) {
+        finalImageUrl = imageUri;
+      }
+
       const payload = {
         nome: nome.trim(),
         descricao: descricao.trim() || undefined,
-        urlImagem: remoteImageUrl,
+        urlImagem: finalImageUrl,
         preco: precoNum,
         categoriaId,
         disponivel,

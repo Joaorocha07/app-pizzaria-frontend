@@ -1,6 +1,21 @@
 import { api } from './api';
 import { Produto, Pedido, Categoria, Borda, Cupom, Banner, ConfiguracaoLoja, StatusPedido } from '../types';
 
+async function uploadImage(
+  fileUri: string,
+  mimeType: string,
+  folder: 'products' | 'banners' | 'categories' = 'products',
+): Promise<string> {
+  const ext = fileUri.split('.').pop()?.split('?')[0] ?? 'jpg';
+  const formData = new FormData();
+  formData.append('file', { uri: fileUri, type: mimeType, name: `upload.${ext}` } as any);
+  formData.append('folder', folder);
+  const { data } = await api.post<{ url: string }>('/admin/upload', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return data.url;
+}
+
 export interface RelatorioVendas {
   totalPedidos: number;
   receita: number;
@@ -13,6 +28,9 @@ export interface RelatorioProduto {
 }
 
 export const adminService = {
+  // ─── Upload ────────────────────────────────────────────────────────────────
+  uploadImage,
+
   // ─── Pedidos ───────────────────────────────────────────────────────────────
 
   async getOrders(params?: { status?: StatusPedido; data?: string }): Promise<Pedido[]> {

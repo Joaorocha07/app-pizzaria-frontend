@@ -98,6 +98,7 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
   const [nome, setNome] = useState('');
   const [descricao, setDescricao] = useState('');
@@ -132,6 +133,22 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
     init();
   }, [isEditing, productId]);
 
+  async function handleAsset(uri: string, mimeType: string) {
+    setImageUri(uri);
+    setUrlImagem('');
+    setUploading(true);
+    try {
+      const remoteUrl = await adminService.uploadImage(uri, mimeType, 'products');
+      setUrlImagem(remoteUrl);
+      setImageUri(remoteUrl);
+    } catch (e: any) {
+      setImageUri(null);
+      Alert.alert('Erro no upload', e.message ?? 'Não foi possível enviar a imagem. Tente novamente.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -145,8 +162,8 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setUrlImagem(result.assets[0].uri);
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
     }
   }
 
@@ -162,9 +179,14 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
       quality: 0.8,
     });
     if (!result.canceled && result.assets[0]) {
-      setImageUri(result.assets[0].uri);
-      setUrlImagem(result.assets[0].uri);
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
     }
+  }
+
+  function handleUrlImagem(v: string) {
+    setUrlImagem(v);
+    if (v.trim().startsWith('http')) setImageUri(v.trim());
   }
 
   function handleImageOptions() {
@@ -235,23 +257,33 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
       >
         {/* Image Upload */}
         <TouchableOpacity
-          onPress={handleImageOptions}
+          onPress={uploading ? undefined : handleImageOptions}
           style={s.imageArea}
-          activeOpacity={0.85}
+          activeOpacity={uploading ? 1 : 0.85}
         >
           {imageUri ? (
             <View style={s.imagePreviewWrapper}>
               <Image source={{ uri: imageUri }} style={s.imagePreview} />
-              <View style={s.imageOverlay}>
-                <Ionicons name="camera" size={24} color="#FFFFFF" />
-                <Text style={s.imageOverlayText}>Alterar</Text>
-              </View>
-              <TouchableOpacity
-                style={s.imageRemoveBtn}
-                onPress={() => { setImageUri(null); setUrlImagem(''); }}
-              >
-                <Ionicons name="close" size={14} color="#FFFFFF" />
-              </TouchableOpacity>
+              {uploading ? (
+                <View style={s.imageUploadingOverlay}>
+                  <Ionicons name="cloud-upload-outline" size={28} color="#FFFFFF" />
+                  <Text style={s.imageOverlayText}>Enviando...</Text>
+                </View>
+              ) : (
+                <View style={s.imageOverlay}>
+                  <Ionicons name="camera" size={24} color="#FFFFFF" />
+                  <Text style={s.imageOverlayText}>Alterar</Text>
+                </View>
+              )}
+              {!uploading && (
+                <TouchableOpacity
+                  style={s.imageRemoveBtn}
+                  onPress={() => { setImageUri(null); setUrlImagem(''); }}
+                  hitSlop={8}
+                >
+                  <Ionicons name="close" size={14} color="#FFFFFF" />
+                </TouchableOpacity>
+              )}
             </View>
           ) : (
             <View style={s.imagePlaceholder}>
@@ -263,6 +295,14 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
             </View>
           )}
         </TouchableOpacity>
+
+        {/* URL da imagem */}
+        <FloatingInput
+          label="URL da imagem"
+          value={urlImagem}
+          onChangeText={handleUrlImagem}
+          placeholder="https://exemplo.com/imagem.jpg"
+        />
 
         {/* Nome */}
         <FloatingInput
@@ -341,9 +381,10 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
         </TouchableOpacity>
 
         <Button
-          title={isEditing ? 'Salvar alterações' : 'Cadastrar produto'}
+          title={uploading ? 'Aguardando upload...' : isEditing ? 'Salvar alterações' : 'Cadastrar produto'}
           onPress={handleSave}
           loading={saving}
+          disabled={uploading}
           size="lg"
           style={{ marginTop: 8 }}
         />
@@ -365,6 +406,7 @@ function createStyles(c: AppColors) {
     imagePreviewWrapper: { height: 200, position: 'relative' },
     imagePreview: { width: '100%', height: 200, borderRadius: 20 },
     imageOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 6 },
+    imageUploadingOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 8 },
     imageOverlayText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
     imageRemoveBtn: { position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 14, backgroundColor: '#E63946', alignItems: 'center', justifyContent: 'center' },
     sectionLabel: { color: c.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },

@@ -47,6 +47,70 @@ function SkeletonShimmer({ style }: { style?: object }) {
   return <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#1C1C1C', opacity: shimmer }, style]} />;
 }
 
+/* ─── Plate illustration (no SVG) ─────────────────── */
+function PlateFill({ isLeft }: { isLeft: boolean }) {
+  const rimR      = CIRCLE / 2;
+  const surfaceD  = CIRCLE * 0.86;
+  const surfaceR  = surfaceD / 2;
+  const surfOff   = (CIRCLE - surfaceD) / 2;
+
+  return (
+    <View
+      style={{
+        position: 'absolute',
+        width: CIRCLE,
+        height: CIRCLE,
+        top: 0,
+        ...(isLeft ? { left: 0 } : { right: 0 }),
+      }}
+    >
+      {/* Rim — diagonal gradient simulates plate depth */}
+      <LinearGradient
+        colors={['#D2D2D2', '#C0C0C0', '#A4A4A4']}
+        locations={[0, 0.45, 1]}
+        start={{ x: 0.22, y: 0.08 }}
+        end={{ x: 0.78, y: 0.92 }}
+        style={{
+          position: 'absolute',
+          width: CIRCLE,
+          height: CIRCLE,
+          borderRadius: rimR,
+        }}
+      />
+
+      {/* Plate surface — off-center highlight simulates spherical curvature */}
+      <View
+        style={{
+          position: 'absolute',
+          left: surfOff,
+          top: surfOff,
+          width: surfaceD,
+          height: surfaceD,
+          borderRadius: surfaceR,
+          overflow: 'hidden',
+        }}
+      >
+        <LinearGradient
+          colors={['#FFFFFF', '#F9F9F9', '#E8E8E8']}
+          locations={[0, 0.5, 1]}
+          start={{ x: 0.22, y: 0.12 }}
+          end={{ x: 0.88, y: 0.92 }}
+          style={StyleSheet.absoluteFill}
+        />
+        {/* Inner shadow ring at plate edge */}
+        <View
+          style={{
+            ...StyleSheet.absoluteFillObject,
+            borderRadius: surfaceR,
+            borderWidth: Math.round(surfaceR * 0.075),
+            borderColor: 'rgba(0,0,0,0.09)',
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+
 /* ─── Half-circle fill component ──────────────────── */
 function HalfFill({
   side,
@@ -60,51 +124,47 @@ function HalfFill({
   const isLeft = side === 'left';
   const [imgLoaded, setImgLoaded] = React.useState(false);
 
-  const scaleX = fillAnim.interpolate({ inputRange: [0, 1], outputRange: [0, 1] });
-  const opacity = fillAnim.interpolate({ inputRange: [0, 0.3, 1], outputRange: [0, 0.6, 1] });
+  // Plate fades out as flavor is chosen; image fades in — no scaleX distortion
+  const plateOpacity = fillAnim.interpolate({ inputRange: [0, 0.55, 1], outputRange: [1, 0.12, 0] });
+  const imgOpacity   = fillAnim.interpolate({ inputRange: [0, 0.35, 1], outputRange: [0, 0.75, 1] });
 
   return (
     <View style={[hf.half, isLeft ? hf.halfLeft : hf.halfRight, { overflow: 'hidden' }]}>
-      {/* Empty state — user hasn't selected yet */}
-      {!produto && (
-        <View style={hf.empty}>
-          <Ionicons name="add-circle-outline" size={24} color="rgba(255,255,255,0.12)" />
-        </View>
-      )}
 
-      {/* Filled state */}
-      {produto && (
-        <Animated.View
-          style={[
-            StyleSheet.absoluteFill,
-            {
-              opacity,
-              transform: [{ scaleX }],
-              transformOrigin: isLeft ? 'left' : 'right',
-            },
-          ]}
-        >
-          {/* Skeleton while image loads */}
-          {produto.urlImagem && !imgLoaded && <SkeletonShimmer />}
+      {/* White plate — fades out when flavor selected */}
+      <Animated.View style={[StyleSheet.absoluteFill, { opacity: plateOpacity }]}>
+        <PlateFill isLeft={isLeft} />
+      </Animated.View>
 
-          {produto.urlImagem ? (
-            <Image
-              source={{ uri: produto.urlImagem }}
-              style={StyleSheet.absoluteFill}
-              resizeMode="cover"
-              onLoad={() => setImgLoaded(true)}
-              onError={() => setImgLoaded(true)}
-            />
-          ) : (
-            <LinearGradient
-              colors={isLeft ? [PRIMARY, '#7B1A12'] : [ACCENT, '#5C4400']}
-              style={StyleSheet.absoluteFill}
-            />
-          )}
-        </Animated.View>
-      )}
+      {/* ── Melhoria 3: Pizza photo — CIRCLE-sized, anchored to seam, cover fills half ── */}
+      <Animated.View
+        style={{
+          position: 'absolute',
+          width: CIRCLE,
+          height: CIRCLE,
+          top: 0,
+          ...(isLeft ? { left: 0 } : { right: 0 }),
+          opacity: imgOpacity,
+        }}
+      >
+        {produto?.urlImagem && !imgLoaded && <SkeletonShimmer />}
+        {produto?.urlImagem ? (
+          <Image
+            source={{ uri: produto.urlImagem }}
+            style={StyleSheet.absoluteFill}
+            resizeMode="cover"
+            onLoad={() => setImgLoaded(true)}
+            onError={() => setImgLoaded(true)}
+          />
+        ) : produto ? (
+          <LinearGradient
+            colors={isLeft ? [PRIMARY, '#7B1A12'] : [ACCENT, '#5C4400']}
+            style={StyleSheet.absoluteFill}
+          />
+        ) : null}
+      </Animated.View>
 
-      {/* Dark overlay + name label */}
+      {/* Dark gradient + name label — only when flavor chosen */}
       {produto && (
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.65)']}
@@ -121,11 +181,11 @@ const hf = StyleSheet.create({
   half: {
     width: H_CIRCLE,
     height: CIRCLE,
-    backgroundColor: '#1A1A1A',
+    // Match plate rim color — prevents dark flash before PlateFill renders
+    backgroundColor: '#C2C2C2',
   },
-  halfLeft: { borderTopLeftRadius: H_CIRCLE, borderBottomLeftRadius: H_CIRCLE },
+  halfLeft:  { borderTopLeftRadius:  H_CIRCLE, borderBottomLeftRadius:  H_CIRCLE },
   halfRight: { borderTopRightRadius: H_CIRCLE, borderBottomRightRadius: H_CIRCLE },
-  empty: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   label: {
     color: '#FFFFFF',
     fontSize: 10,
@@ -180,9 +240,8 @@ function FlavorRow({
           {produto.urlImagem ? (
             <Image source={{ uri: produto.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           ) : (
-            <LinearGradient colors={['#2A2A2A', '#1A1A1A']} style={StyleSheet.absoluteFill} />
+            <LinearGradient colors={['#2A1A1A', '#111111']} style={StyleSheet.absoluteFill} />
           )}
-          {!produto.urlImagem && <Ionicons name="pizza-outline" size={22} color="rgba(255,255,255,0.25)" />}
         </View>
 
         {/* Info */}

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, Pressable, Animated, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -7,6 +7,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { AppHeader } from '../components/common/AppHeader';
 import { HomeScreen } from '../screens/Home/HomeScreen';
 import { MenuScreen } from '../screens/Menu/MenuScreen';
 import { OrdersScreen } from '../screens/Orders/OrdersScreen';
@@ -160,15 +161,19 @@ const tabItemStyles = StyleSheet.create({
 });
 
 /* ─── CustomTabBar ───────────────────────────────────────────── */
-function CustomTabBar({ state, descriptors, navigation }: BottomTabBarProps) {
+interface CustomTabBarProps extends BottomTabBarProps {
+  onTabChange?: (routeName: string) => void;
+}
+
+function CustomTabBar({ state, descriptors, navigation, onTabChange }: CustomTabBarProps) {
+  const focusedName = state.routes[state.index]?.name;
+  useEffect(() => {
+    onTabChange?.(focusedName);
+  }, [focusedName]);
   const insets = useSafeAreaInsets();
   const { colors, isDark } = useTheme();
 
-  const gradientColors = (
-    isDark
-      ? ['#0F0F0F', '#000000']
-      : ['#F8F5F0', '#EFECE8']
-  ) as [string, string];
+  const gradientColors = [colors.tabBar, colors.tabBar] as [string, string];
 
   return (
     <LinearGradient
@@ -222,12 +227,17 @@ const tabBarStyles = StyleSheet.create({
 /* ─── TabNavigator ───────────────────────────────────────────── */
 export function TabNavigator() {
   const { isStaff, isAdmin } = useAuth();
+  const [activeRoute, setActiveRoute] = useState('Home');
+
+  const showAppHeader = !isStaff && activeRoute !== 'Perfil';
 
   return (
-    <Tab.Navigator
-      tabBar={(props) => <CustomTabBar {...props} />}
-      screenOptions={{ headerShown: false }}
-    >
+    <View style={{ flex: 1 }}>
+      {showAppHeader && <AppHeader />}
+      <Tab.Navigator
+        tabBar={(props) => <CustomTabBar {...props} onTabChange={setActiveRoute} />}
+        screenOptions={{ headerShown: false }}
+      >
       {!isStaff ? (
         <>
           <Tab.Screen name="Home"     component={HomeScreen}  options={{ tabBarLabel: 'Início' }} />
@@ -248,5 +258,6 @@ export function TabNavigator() {
       )}
       <Tab.Screen name="Perfil" component={ProfileScreen} options={{ tabBarLabel: 'Conta' }} />
     </Tab.Navigator>
+    </View>
   );
 }

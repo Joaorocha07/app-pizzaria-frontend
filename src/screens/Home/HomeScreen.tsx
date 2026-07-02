@@ -15,9 +15,6 @@ import {
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { useAuth } from '../../contexts/AuthContext';
-import { useCart } from '../../contexts/CartContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
 import { productService } from '../../services/productService';
@@ -52,6 +49,7 @@ function Skel({
   r?: number;
   style?: object;
 }) {
+  const { colors } = useTheme();
   const pulse = useRef(new Animated.Value(0.3)).current;
   useEffect(() => {
     Animated.loop(
@@ -63,27 +61,15 @@ function Skel({
   }, []);
   return (
     <Animated.View
-      style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: '#1E1E1E', opacity: pulse }, style]}
+      style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: colors.bgInput, opacity: pulse }, style]}
     />
   );
 }
 
-function HomeSkeleton({ pt }: { pt: number }) {
+function HomeSkeleton() {
   const { colors } = useTheme();
   return (
     <ScrollView style={[ss.root, { backgroundColor: colors.bg }]} scrollEnabled={false} showsVerticalScrollIndicator={false}>
-      {/* header */}
-      <View style={[ss.header, { paddingTop: pt }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-          <Skel w={44} h={44} r={22} />
-          <View style={{ gap: 6 }}>
-            <Skel w={80} h={10} r={5} />
-            <Skel w={130} h={14} r={7} />
-          </View>
-        </View>
-        <Skel w={40} h={40} r={20} />
-      </View>
-
       {/* search */}
       <View style={{ paddingHorizontal: H_PAD, marginBottom: 28 }}>
         <Skel w="100%" h={50} r={16} />
@@ -137,6 +123,7 @@ function OfertasBanner({
   banners: Banner[];
   onPress: (b: Banner) => void;
 }) {
+  const { colors } = useTheme();
   const [active, setActive] = useState(0);
   const listRef = useRef<FlatList>(null);
   const fade = useRef(new Animated.Value(0)).current;
@@ -194,7 +181,7 @@ function OfertasBanner({
           setActive(Math.max(0, Math.min(idx, banners.length - 1)));
         }}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress(item)} activeOpacity={0.9} style={bs.item}>
+          <TouchableOpacity onPress={() => onPress(item)} activeOpacity={0.9} style={[bs.item, { borderColor: colors.border }]}>
             <Image source={{ uri: item.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
             <LinearGradient
               colors={['rgba(192,57,43,0.65)', 'rgba(0,0,0,0.55)']}
@@ -217,7 +204,7 @@ function OfertasBanner({
           {banners.map((_, i) => (
             <View
               key={i}
-              style={[bs.dot, i === active ? bs.dotActive : null]}
+              style={[bs.dot, { backgroundColor: i === active ? PRIMARY : colors.textMuted }]}
             />
           ))}
         </View>
@@ -391,10 +378,10 @@ function PopularCard({
   }
 
   return (
-    <Animated.View style={[ps.card, { width: CARD_W, opacity, transform: [{ translateY }], backgroundColor: colors.bgElevated }]}>
+    <Animated.View style={[ps.card, { width: CARD_W, opacity, transform: [{ translateY }], backgroundColor: colors.bgElevated, borderColor: colors.border }]}>
       <TouchableOpacity onPress={onPress} activeOpacity={0.88} style={{ flex: 1 }}>
         {/* Image */}
-        <View style={ps.imgWrap}>
+        <View style={[ps.imgWrap, { backgroundColor: colors.bgInput }]}>
           {produto.urlImagem && !imgErr ? (
             <Image
               source={{ uri: produto.urlImagem }}
@@ -403,9 +390,10 @@ function PopularCard({
               onError={() => setImgErr(true)}
             />
           ) : (
-            <View style={ps.imgFallback}>
-              <Ionicons name="pizza-outline" size={38} color="rgba(255,255,255,0.18)" />
-            </View>
+            <LinearGradient
+              colors={['#1E1212', '#0D0D0D']}
+              style={[StyleSheet.absoluteFill, ps.imgFallback]}
+            />
           )}
           <LinearGradient
             colors={['transparent', 'rgba(0,0,0,0.6)']}
@@ -421,12 +409,6 @@ function PopularCard({
         {/* Info */}
         <View style={ps.info}>
           <Text style={[ps.name, { color: colors.text }]} numberOfLines={2}>{produto.nome}</Text>
-
-          {/* Rating (decorative) */}
-          <View style={ps.ratingRow}>
-            <Ionicons name="star" size={11} color={ACCENT} />
-            <Text style={ps.ratingText}>4.8</Text>
-          </View>
 
           <View style={ps.footer}>
             <Text style={ps.price}>{formatCurrency(produto.preco)}</Text>
@@ -470,9 +452,6 @@ const ps = StyleSheet.create({
   },
   imgFallback: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: '#1A1A1A',
   },
   imgGradient: {
     position: 'absolute',
@@ -501,17 +480,6 @@ const ps = StyleSheet.create({
     fontSize: 13,
     fontWeight: '700',
     lineHeight: 17,
-  },
-  ratingRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 3,
-    marginTop: 3,
-  },
-  ratingText: {
-    color: ACCENT,
-    fontSize: 11,
-    fontWeight: '700',
   },
   footer: {
     flexDirection: 'row',
@@ -553,9 +521,7 @@ function SectionRow({ title, onViewAll }: { title: string; onViewAll: () => void
 
 /* ─── HomeScreen ─────────────────────────────────────────────── */
 export function HomeScreen({ navigation }: Props) {
-  const { usuario } = useAuth();
   const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
   const [banners, setBanners] = useState<Banner[]>([]);
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [produtos, setProdutos] = useState<Produto[]>([]);
@@ -608,12 +574,8 @@ export function HomeScreen({ navigation }: Props) {
     load();
   }, [load]);
 
-  const { totalItens } = useCart();
-  const pt = insets.top + 14;
-  if (loading) return <HomeSkeleton pt={pt} />;
+  if (loading) return <HomeSkeleton />;
   if (error) return <ErrorMessage message={error} onRetry={load} />;
-
-  const initial = usuario?.nome?.charAt(0).toUpperCase() ?? '?';
 
   return (
     <ScrollView
@@ -628,54 +590,7 @@ export function HomeScreen({ navigation }: Props) {
       }
       showsVerticalScrollIndicator={false}
     >
-      {/* ── 1. Header ── */}
-      <View style={[ss.header, { paddingTop: pt }]}>
-        {/* Avatar + location */}
-        <TouchableOpacity
-          onPress={() => (navigation as any).navigate('Addresses')}
-          style={ss.locationBlock}
-          activeOpacity={0.8}
-        >
-          <View style={ss.avatar}>
-            <Text style={ss.avatarInitial}>{initial}</Text>
-          </View>
-          <View>
-            <Text style={[ss.locationLabel, { color: colors.textSecondary }]}>Localização</Text>
-            <View style={ss.locationRow}>
-              <Text style={[ss.locationCity, { color: colors.text }]} numberOfLines={1}>
-                {usuario?.nome?.split(' ')[0] ?? 'Meu endereço'}
-              </Text>
-              <Ionicons name="chevron-down" size={14} color="#F5F0E8" style={{ marginLeft: 3 }} />
-            </View>
-          </View>
-        </TouchableOpacity>
-
-        {/* Cart + Bell */}
-        <View style={ss.headerActions}>
-          <TouchableOpacity
-            onPress={() => (navigation as any).navigate('Cart')}
-            style={ss.bellBtn}
-            activeOpacity={0.75}
-          >
-            <Ionicons name="bag-outline" size={22} color="#F5F0E8" />
-            {totalItens > 0 && (
-              <View style={ss.cartBadge}>
-                <Text style={ss.cartBadgeText}>{totalItens > 9 ? '9+' : totalItens}</Text>
-              </View>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => (navigation as any).navigate('Notificacoes')}
-            style={ss.bellBtn}
-            activeOpacity={0.75}
-          >
-            <Ionicons name="notifications-outline" size={22} color="#F5F0E8" />
-            <View style={ss.badge} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* ── 2. Search ── */}
+      {/* ── 1. Search ── */}
       <TouchableOpacity
         onPress={() => (navigation as any).navigate('Cardapio')}
         activeOpacity={0.8}
@@ -688,14 +603,14 @@ export function HomeScreen({ navigation }: Props) {
         </View>
       </TouchableOpacity>
 
-      {/* ── 3. Ofertas Exclusivas ── */}
+      {/* ── 2. Ofertas Exclusivas ── */}
       <SectionRow
         title="Ofertas Exclusivas"
         onViewAll={() => (navigation as any).navigate('Cardapio')}
       />
       <OfertasBanner banners={banners} onPress={() => {}} />
 
-      {/* ── 4. Explorar Categorias ── */}
+      {/* ── 3. Explorar Categorias ── */}
       <SectionRow
         title="Explorar Categorias"
         onViewAll={() => (navigation as any).navigate('Cardapio')}
@@ -728,7 +643,7 @@ export function HomeScreen({ navigation }: Props) {
         ))}
       </ScrollView>
 
-      {/* ── 5. Pratos Populares ── */}
+      {/* ── 4. Pratos Populares ── */}
       <SectionRow
         title="Pratos Populares"
         onViewAll={() => (navigation as any).navigate('Cardapio')}
@@ -741,14 +656,27 @@ export function HomeScreen({ navigation }: Props) {
         </View>
       ) : (
         <View style={ss.grid}>
-          {produtos.map((produto, i) => (
-            <PopularCard
-              key={produto.id}
-              produto={produto}
-              delay={Math.min(i, 5) * 55}
-              onPress={() => (navigation as any).navigate('ProductDetails', { productId: produto.id })}
-            />
-          ))}
+          {produtos.map((produto, i) => {
+            const cat = categorias.find((c) => c.id === produto.categoriaId);
+            return (
+              <PopularCard
+                key={produto.id}
+                produto={produto}
+                delay={Math.min(i, 5) * 55}
+                onPress={() => {
+                  if (cat) {
+                    (navigation as any).navigate('PizzaSize', {
+                      categoryId: cat.id,
+                      categoryName: cat.nome,
+                      categoryIcon: cat.icone ?? undefined,
+                    });
+                  } else {
+                    (navigation as any).navigate('ProductDetails', { productId: produto.id });
+                  }
+                }}
+              />
+            );
+          })}
         </View>
       )}
 
@@ -760,97 +688,6 @@ export function HomeScreen({ navigation }: Props) {
 /* ─── Shared styles ──────────────────────────────────────────── */
 const ss = StyleSheet.create({
   root: { flex: 1, backgroundColor: BG },
-
-  /* header */
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: H_PAD,
-    paddingBottom: 22,
-  },
-  locationBlock: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    flex: 1,
-  },
-  avatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: PRIMARY,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.15)',
-  },
-  avatarInitial: {
-    color: '#FFFFFF',
-    fontSize: 18,
-    fontWeight: '800',
-  },
-  locationLabel: {
-    color: 'rgba(255,255,255,0.35)',
-    fontSize: 11,
-    fontWeight: '500',
-    marginBottom: 2,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationCity: {
-    color: '#F5F0E8',
-    fontSize: 14,
-    fontWeight: '700',
-    maxWidth: 160,
-  },
-  headerActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  bellBtn: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: 'rgba(255,255,255,0.07)',
-    borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cartBadge: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: PRIMARY,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-    borderWidth: 1.5,
-    borderColor: BG,
-  },
-  cartBadgeText: {
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '800',
-  },
-  badge: {
-    position: 'absolute',
-    top: 9,
-    right: 9,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: PRIMARY,
-    borderWidth: 1.5,
-    borderColor: BG,
-  },
 
   /* search */
   searchBar: {

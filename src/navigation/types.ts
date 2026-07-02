@@ -41,4 +41,6 @@ export type AppStackParamList = {
   AdminBanners: undefined;
   AdminBannerForm: { bannerId?: number };
   AdminStoreConfig: undefined;
+  Pagamentos: undefined;
+  Cupons: undefined;
 };

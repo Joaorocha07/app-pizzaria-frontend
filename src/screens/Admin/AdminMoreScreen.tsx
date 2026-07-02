@@ -1,84 +1,85 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useRef } from 'react';
+import { Animated, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
-import { Header } from '../../components/common/Header';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = { navigation: NativeStackNavigationProp<AppStackParamList> };
 
-const SECTIONS: {
-  label: string;
-  descricao: string;
-  icon: React.ComponentProps<typeof Ionicons>['name'];
-  screen: keyof AppStackParamList;
-  color: string;
-}[] = [
-  {
-    label: 'Categorias',
-    descricao: 'Criar, editar e remover categorias',
-    icon: 'grid-outline',
-    screen: 'AdminCategories',
-    color: '#F4A261',
-  },
-  {
-    label: 'Bordas',
-    descricao: 'Gerenciar opções de borda recheada',
-    icon: 'pizza-outline',
-    screen: 'AdminCrusts',
-    color: '#9B5DE5',
-  },
-  {
-    label: 'Cupons',
-    descricao: 'Criar e gerenciar cupons de desconto',
-    icon: 'pricetag-outline',
-    screen: 'AdminCoupons',
-    color: '#2A9D8F',
-  },
-  {
-    label: 'Banners',
-    descricao: 'Banners promocionais da home',
-    icon: 'image-outline',
-    screen: 'AdminBanners',
-    color: '#457B9D',
-  },
-  {
-    label: 'Configurações da Loja',
-    descricao: 'Parâmetros gerais do sistema',
-    icon: 'settings-outline',
-    screen: 'AdminStoreConfig',
-    color: '#A0A0A0',
-  },
+type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const SECTIONS: { label: string; descricao: string; icon: IoniconName; screen: keyof AppStackParamList }[] = [
+  { label: 'Categorias',           descricao: 'Criar, editar e remover categorias',    icon: 'grid-outline',      screen: 'AdminCategories'  },
+  { label: 'Bordas',               descricao: 'Gerenciar opções de borda recheada',    icon: 'pizza-outline',     screen: 'AdminCrusts'      },
+  { label: 'Cupons',               descricao: 'Criar e gerenciar cupons de desconto',  icon: 'pricetag-outline',  screen: 'AdminCoupons'     },
+  { label: 'Banners',              descricao: 'Banners promocionais da home',          icon: 'image-outline',     screen: 'AdminBanners'     },
+  { label: 'Configurações da Loja',descricao: 'Parâmetros gerais do sistema',          icon: 'settings-outline',  screen: 'AdminStoreConfig' },
 ];
 
+function SectionCard({ label, descricao, icon, onPress }: {
+  label: string; descricao: string; icon: IoniconName; onPress: () => void;
+}) {
+  const scale   = useRef(new Animated.Value(1)).current;
+  const overlay = useRef(new Animated.Value(0)).current;
+
+  function pressIn() {
+    Animated.parallel([
+      Animated.spring(scale,   { toValue: 0.98, useNativeDriver: true, speed: 60 }),
+      Animated.timing(overlay, { toValue: 1,    useNativeDriver: true, duration: 80 }),
+    ]).start();
+  }
+
+  function pressOut() {
+    Animated.parallel([
+      Animated.spring(scale,   { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }),
+      Animated.timing(overlay, { toValue: 0, useNativeDriver: true, duration: 160 }),
+    ]).start();
+  }
+
+  return (
+    <Animated.View style={[s.card, { transform: [{ scale }] }]}>
+      <Pressable onPress={onPress} onPressIn={pressIn} onPressOut={pressOut} style={s.cardInner}>
+        {/* Light overlay on press */}
+        <Animated.View style={[StyleSheet.absoluteFill, s.pressOverlay, { opacity: overlay }]} />
+
+        <Ionicons name={icon} size={22} color="#F5F5F5" />
+
+        <View style={s.textWrap}>
+          <Text style={s.label}>{label}</Text>
+          <Text style={s.description}>{descricao}</Text>
+        </View>
+
+        <Ionicons name="chevron-forward" size={18} color="#888888" />
+      </Pressable>
+    </Animated.View>
+  );
+}
+
 export function AdminMoreScreen({ navigation }: Props) {
+  const insets = useSafeAreaInsets();
+
   return (
     <View style={s.root}>
-      <Header title="Gerenciar" subtitle="Configurações do restaurante" />
+      {/* Header */}
+      <View style={[s.header, { paddingTop: insets.top + 20 }]}>
+        <Text style={s.headerTitle}>Gerenciar</Text>
+        <Text style={s.headerSub}>Configurações do restaurante</Text>
+      </View>
 
       <ScrollView
         style={s.scroll}
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
       >
-        {SECTIONS.map((section) => (
-          <TouchableOpacity
-            key={section.screen}
-            onPress={() => navigation.navigate(section.screen as any)}
-            style={s.card}
-            activeOpacity={0.75}
-          >
-            <View style={[s.iconWrap, { backgroundColor: `${section.color}18` }]}>
-              <Ionicons name={section.icon} size={22} color={section.color} />
-            </View>
-            <View style={s.textWrap}>
-              <Text style={s.label}>{section.label}</Text>
-              <Text style={s.description}>{section.descricao}</Text>
-            </View>
-            <View style={s.arrowWrap}>
-              <Ionicons name="chevron-forward" size={18} color="#444444" />
-            </View>
-          </TouchableOpacity>
+        {SECTIONS.map(sec => (
+          <SectionCard
+            key={sec.screen}
+            label={sec.label}
+            descricao={sec.descricao}
+            icon={sec.icon}
+            onPress={() => navigation.navigate(sec.screen as any)}
+          />
         ))}
       </ScrollView>
     </View>
@@ -86,44 +87,39 @@ export function AdminMoreScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#0D0D0D' },
-  scroll: { flex: 1 },
-  content: { padding: 16, paddingBottom: 32 },
+  root:   { flex: 1, backgroundColor: '#0A0A0A' },
+
+  header: {
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    paddingBottom: 24,
+  },
+  headerTitle: { color: '#F5F5F5', fontSize: 26, fontWeight: '800' },
+  headerSub:   { color: '#888888', fontSize: 13, fontWeight: '500', marginTop: 4 },
+
+  scroll:   { flex: 1 },
+  content:  { paddingHorizontal: 16, paddingBottom: 32, gap: 10 },
+
   card: {
+    backgroundColor: '#111111',
+    borderRadius: 18,
+    borderWidth: 1,
+    borderColor: '#1E1E1E',
+    overflow: 'hidden',
+  },
+  cardInner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1A1A1A',
-    borderRadius: 18,
     padding: 16,
-    marginBottom: 10,
-    borderWidth: 1,
-    borderColor: '#2A2A2A',
     gap: 14,
   },
-  iconWrap: {
-    width: 46,
-    height: 46,
-    borderRadius: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+  pressOverlay: {
+    backgroundColor: '#FFFFFF',
+    opacity: 0,
+    borderRadius: 18,
   },
-  textWrap: { flex: 1 },
-  label: {
-    color: '#FFFFFF',
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  description: {
-    color: '#A0A0A0',
-    fontSize: 12,
-    marginTop: 2,
-  },
-  arrowWrap: {
-    width: 28,
-    height: 28,
-    borderRadius: 10,
-    backgroundColor: '#242424',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
+
+  textWrap:    { flex: 1 },
+  label:       { color: '#F5F5F5', fontSize: 16, fontWeight: '700' },
+  description: { color: '#888888', fontSize: 12, marginTop: 3 },
 });

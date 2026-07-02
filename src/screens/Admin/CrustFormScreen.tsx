@@ -25,6 +25,7 @@ export function AdminCrustFormScreen({ navigation, route }: Props) {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [nome, setNome] = useState('');
   const [preco, setPreco] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
@@ -46,18 +47,45 @@ export function AdminCrustFormScreen({ navigation, route }: Props) {
       .finally(() => setLoading(false));
   }, [isEditing, crustId]);
 
+  async function handleAsset(uri: string, mimeType: string) {
+    setImageUri(uri);
+    setUrlImagem('');
+    setUploading(true);
+    try {
+      const remoteUrl = await adminService.uploadImage(uri, mimeType, 'products');
+      setUrlImagem(remoteUrl);
+      setImageUri(remoteUrl);
+    } catch (e: any) {
+      setImageUri(null);
+      Alert.alert('Erro no upload', e.message ?? 'Não foi possível enviar a imagem. Tente novamente.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permissão necessária', 'Permita o acesso à galeria.'); return; }
     const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) { setImageUri(result.assets[0].uri); setUrlImagem(result.assets[0].uri); }
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
+    }
   }
 
   async function takePhoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permissão necessária', 'Permita o acesso à câmera.'); return; }
     const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) { setImageUri(result.assets[0].uri); setUrlImagem(result.assets[0].uri); }
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
+    }
+  }
+
+  function handleUrlImagem(v: string) {
+    setUrlImagem(v);
+    if (v.trim().startsWith('http')) setImageUri(v.trim());
   }
 
   function handleImageOptions() {
@@ -106,19 +134,38 @@ export function AdminCrustFormScreen({ navigation, route }: Props) {
       >
         <Input label="Nome *" placeholder="Ex: Catupiry" value={nome} onChangeText={setNome} />
 
+        {/* URL da imagem */}
+        <Input
+          label="URL da imagem"
+          placeholder="https://exemplo.com/imagem.jpg"
+          value={urlImagem}
+          onChangeText={handleUrlImagem}
+          keyboardType="url"
+          autoCapitalize="none"
+        />
+
         {/* Image picker */}
-        <TouchableOpacity onPress={handleImageOptions} style={[cf.imgPicker, { backgroundColor: colors.bgInput, borderColor: colors.borderStrong }]} activeOpacity={0.8}>
+        <TouchableOpacity onPress={uploading ? undefined : handleImageOptions} style={[cf.imgPicker, { backgroundColor: colors.bgInput, borderColor: colors.borderStrong }]} activeOpacity={uploading ? 1 : 0.8}>
           {imageUri ? (
-            <Image source={{ uri: imageUri }} style={cf.imgPreview} resizeMode="cover" />
+            <>
+              <Image source={{ uri: imageUri }} style={cf.imgPreview} resizeMode="cover" />
+              {uploading && (
+                <View style={cf.uploadingOverlay}>
+                  <Ionicons name="cloud-upload-outline" size={22} color="#FFFFFF" />
+                </View>
+              )}
+            </>
           ) : (
             <View style={cf.imgPlaceholder}>
               <Ionicons name="image-outline" size={32} color={colors.textMuted} />
               <Text style={[cf.imgPlaceholderText, { color: colors.textMuted }]}>Adicionar imagem</Text>
             </View>
           )}
-          <View style={cf.imgOverlay}>
-            <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
-          </View>
+          {!uploading && (
+            <View style={cf.imgOverlay}>
+              <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
+            </View>
+          )}
         </TouchableOpacity>
 
         <Input
@@ -130,9 +177,10 @@ export function AdminCrustFormScreen({ navigation, route }: Props) {
           leftIcon={<Text className="text-gray-400">R$</Text>}
         />
         <Button
-          title={isEditing ? 'Salvar alterações' : 'Criar borda'}
+          title={uploading ? 'Aguardando upload...' : isEditing ? 'Salvar alterações' : 'Criar borda'}
           onPress={handleSave}
           loading={saving}
+          disabled={uploading}
           size="lg"
         />
       </ScrollView>
@@ -159,5 +207,12 @@ const cf = StyleSheet.create({
     position: 'absolute', bottom: 8, right: 8,
     backgroundColor: '#C0392B', borderRadius: 12,
     width: 28, height: 28, alignItems: 'center', justifyContent: 'center',
+  },
+  uploadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 22,
   },
 });

@@ -86,9 +86,11 @@ function CategoryCard({ categoria, width, height, delay, onPress }: CardProps) {
           <Image source={{ uri: categoria.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
           <LinearGradient
-            colors={['#1C1C1C', '#0D0D0D']}
-            style={StyleSheet.absoluteFill}
-          />
+            colors={['#2A1A1A', '#0D0D0D']}
+            style={[StyleSheet.absoluteFill, cs.fallbackGradient]}
+          >
+            <Ionicons name="restaurant-outline" size={Math.round(height * 0.3)} color="rgba(192,57,43,0.22)" />
+          </LinearGradient>
         )}
 
         {/* Bottom gradient overlay */}
@@ -114,6 +116,10 @@ function CategoryCard({ categoria, width, height, delay, onPress }: CardProps) {
 }
 
 const cs = StyleSheet.create({
+  fallbackGradient: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   card: {
     borderRadius: 22,
     overflow: 'hidden',

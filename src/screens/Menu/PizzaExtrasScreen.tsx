@@ -29,24 +29,26 @@ const H_CIRCLE = CIRCLE / 2;
 const PRIMARY = '#C0392B';
 const ACCENT = '#B8860B';
 const BG = '#0A0A0A';
-
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
   route: RouteProp<AppStackParamList, 'PizzaExtras'>;
 };
 
+
 /* ─── CompletePizzaCircle ──────────────────────────── */
 function CompletePizzaCircle({
   produto1,
   produto2,
+  selectedBorda,
   onRemove,
 }: {
   produto1: Produto | null;
   produto2: Produto | null;
+  selectedBorda?: Borda | null;
   onRemove: () => void;
 }) {
   const { colors } = useTheme();
-  const enterScale = useRef(new Animated.Value(0.7)).current;
+  const enterScale   = useRef(new Animated.Value(0.7)).current;
   const enterOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
@@ -56,6 +58,7 @@ function CompletePizzaCircle({
     ]).start();
   }, []);
 
+  /* Melhoria 1: Half renders image filling the half precisely */
   function Half({ produto, side }: { produto: Produto | null; side: 'left' | 'right' }) {
     const gradColors: [string, string] = side === 'left'
       ? [PRIMARY, '#7B1A12']
@@ -76,7 +79,6 @@ function CompletePizzaCircle({
 
     return (
       <View style={[cp.half, side === 'left' ? cp.halfLeft : cp.halfRight]}>
-        {/* Skeleton while image loads */}
         {produto?.urlImagem && !imgLoaded && (
           <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#1C1C1C', opacity: shimmer }]} />
         )}
@@ -99,27 +101,29 @@ function CompletePizzaCircle({
 
   return (
     <Animated.View style={[cp.wrap, { transform: [{ scale: enterScale }], opacity: enterOpacity }]}>
-      <View style={cp.circle}>
-        <Half produto={produto1} side="left" />
-        <View style={[cp.divider, { backgroundColor: colors.bg }]} />
-        <Half produto={produto2} side="right" />
+      <View style={cp.circleWrap}>
+        <View style={cp.circle}>
+          <Half produto={produto1} side="left" />
+          <View style={[cp.divider, { backgroundColor: colors.bg }]} />
+          <Half produto={produto2} side="right" />
+        </View>
+        <View style={cp.badge}>
+          <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+        </View>
       </View>
 
-      {/* Single remove button — goes back to re-select flavors */}
       <TouchableOpacity onPress={onRemove} style={cp.removeBtn} activeOpacity={0.8}>
         <Ionicons name="trash-outline" size={14} color="#FFFFFF" />
         <Text style={cp.removeBtnText}>Alterar sabores</Text>
       </TouchableOpacity>
-
-      <View style={cp.badge}>
-        <Ionicons name="checkmark" size={14} color="#FFFFFF" />
-      </View>
     </Animated.View>
   );
 }
 
 const cp = StyleSheet.create({
   wrap: { alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  circleWrap: { width: CIRCLE, height: CIRCLE },
+
   circle: {
     width: CIRCLE,
     height: CIRCLE,
@@ -139,8 +143,6 @@ const cp = StyleSheet.create({
     height: CIRCLE,
     overflow: 'hidden',
     backgroundColor: '#1A1A1A',
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   halfLeft: {},
   halfRight: {},
@@ -179,8 +181,8 @@ const cp = StyleSheet.create({
   removeBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '600' },
   badge: {
     position: 'absolute',
-    top: -6,
-    right: SW / 2 - CIRCLE / 2 - 10,
+    top: 2,
+    right: 2,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -210,7 +212,10 @@ function ExtraCard({
         {borda.urlImagem ? (
           <Image source={{ uri: borda.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
-          <Ionicons name="pizza-outline" size={22} color={selected ? ACCENT : 'rgba(255,255,255,0.3)'} />
+          <LinearGradient
+            colors={['#2A2A2A', '#111111']}
+            style={StyleSheet.absoluteFill}
+          />
         )}
       </View>
       <View style={ec.info}>
@@ -274,6 +279,8 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
 
   const barY = useRef(new Animated.Value(120)).current;
   const barOpacity = useRef(new Animated.Value(0)).current;
+  const snackY = useRef(new Animated.Value(60)).current;
+  const snackOpacity = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     /* Load products + sizes */
@@ -318,7 +325,6 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
       Alert.alert('Aguarde', 'Os produtos ainda estão sendo carregados.');
       return;
     }
-    /* Add the higher-priced product with borda; second without borda to avoid double-charging */
     const [main, side] = produto1.preco >= produto2.preco
       ? [produto1, produto2]
       : [produto2, produto1];
@@ -326,7 +332,18 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
     if (side.id !== main.id) {
       addItem(side, quantidade, selectedTamanho ?? undefined, undefined);
     }
-    navigation.navigate('Cart');
+
+    /* Show snackbar then return to menu */
+    Animated.parallel([
+      Animated.spring(snackY, { toValue: 0, useNativeDriver: true, speed: 18, bounciness: 6 }),
+      Animated.timing(snackOpacity, { toValue: 1, duration: 220, useNativeDriver: true }),
+    ]).start(() => {
+      setTimeout(() => {
+        Animated.timing(snackOpacity, { toValue: 0, duration: 200, useNativeDriver: true }).start(() => {
+          navigation.navigate('MainTabs', { screen: 'Cardapio' });
+        });
+      }, 1400);
+    });
   }
 
   const canAdd = !loadingProducts && !!produto1 && !!produto2;
@@ -350,6 +367,7 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
           <CompletePizzaCircle
             produto1={produto1}
             produto2={produto2}
+            selectedBorda={selectedBorda}
             onRemove={() => navigation.goBack()}
           />
           <Text style={es.pizzaNames}>
@@ -446,6 +464,15 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
           </TouchableOpacity>
         </View>
       </Animated.View>
+
+      {/* Snackbar */}
+      <Animated.View
+        style={[es.snack, { bottom: insets.bottom + 100, opacity: snackOpacity, transform: [{ translateY: snackY }] }]}
+        pointerEvents="none"
+      >
+        <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
+        <Text style={es.snackText}>Item adicionado! Finalize seu pedido no carrinho</Text>
+      </Animated.View>
     </View>
   );
 }
@@ -502,4 +529,29 @@ const es = StyleSheet.create({
   },
   ctaBtnDisabled: { opacity: 0.4 },
   ctaBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  snack: {
+    position: 'absolute',
+    left: 20,
+    right: 20,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: '#1A1A1A',
+    borderWidth: 1,
+    borderColor: 'rgba(34,197,94,0.3)',
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    elevation: 10,
+  },
+  snackText: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
 });

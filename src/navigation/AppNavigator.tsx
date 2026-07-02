@@ -24,6 +24,8 @@ import { AdminCouponFormScreen } from '../screens/Admin/CouponFormScreen';
 import { AdminBannersManagementScreen } from '../screens/Admin/BannersManagementScreen';
 import { AdminBannerFormScreen } from '../screens/Admin/BannerFormScreen';
 import { AdminStoreConfigScreen } from '../screens/Admin/StoreConfigScreen';
+import { PlaceholderScreen } from '../screens/Profile/PlaceholderScreen';
+import { CouponsScreen } from '../screens/Coupons/CouponsScreen';
 import { AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -55,6 +57,8 @@ export function AppNavigator() {
       <Stack.Screen name="AdminBanners" component={AdminBannersManagementScreen} />
       <Stack.Screen name="AdminBannerForm" component={AdminBannerFormScreen} />
       <Stack.Screen name="AdminStoreConfig" component={AdminStoreConfigScreen} />
+      <Stack.Screen name="Pagamentos" component={PlaceholderScreen} />
+      <Stack.Screen name="Cupons" component={CouponsScreen} />
     </Stack.Navigator>
   );
 }

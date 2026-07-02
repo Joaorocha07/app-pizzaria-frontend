@@ -25,6 +25,7 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
 
   const [loading, setLoading] = useState(isEditing);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [nome, setNome] = useState('');
   const [icone, setIcone] = useState('');
   const [ordem, setOrdem] = useState('0');
@@ -50,18 +51,45 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
       .finally(() => setLoading(false));
   }, [isEditing, categoryId]);
 
+  async function handleAsset(uri: string, mimeType: string) {
+    setImageUri(uri);
+    setUrlImagem('');
+    setUploading(true);
+    try {
+      const remoteUrl = await adminService.uploadImage(uri, mimeType, 'categories');
+      setUrlImagem(remoteUrl);
+      setImageUri(remoteUrl);
+    } catch (e: any) {
+      setImageUri(null);
+      Alert.alert('Erro no upload', e.message ?? 'Não foi possível enviar a imagem. Tente novamente.');
+    } finally {
+      setUploading(false);
+    }
+  }
+
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permissão necessária', 'Permita o acesso à galeria.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) { setImageUri(result.assets[0].uri); setUrlImagem(result.assets[0].uri); }
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [16, 9], quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
+    }
   }
 
   async function takePhoto() {
     const { status } = await ImagePicker.requestCameraPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permissão necessária', 'Permita o acesso à câmera.'); return; }
-    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [1, 1], quality: 0.8 });
-    if (!result.canceled && result.assets[0]) { setImageUri(result.assets[0].uri); setUrlImagem(result.assets[0].uri); }
+    const result = await ImagePicker.launchCameraAsync({ allowsEditing: true, aspect: [16, 9], quality: 0.8 });
+    if (!result.canceled && result.assets[0]) {
+      const asset = result.assets[0];
+      await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
+    }
+  }
+
+  function handleUrlImagem(v: string) {
+    setUrlImagem(v);
+    if (v.trim().startsWith('http')) setImageUri(v.trim());
   }
 
   function handleImageOptions() {
@@ -116,19 +144,42 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
           onChangeText={setIcone}
         />
 
-        {/* Image picker */}
-        <TouchableOpacity onPress={handleImageOptions} style={[cf.imgPicker, { backgroundColor: colors.bgInput, borderColor: colors.borderStrong }]} activeOpacity={0.8}>
+        {/* URL da imagem */}
+        <Input
+          label="URL da imagem do banner"
+          placeholder="https://exemplo.com/imagem.jpg"
+          value={urlImagem}
+          onChangeText={handleUrlImagem}
+          keyboardType="url"
+          autoCapitalize="none"
+        />
+
+        {/* Image picker — banner full-width */}
+        <TouchableOpacity onPress={uploading ? undefined : handleImageOptions} style={[cf.imgPicker, { backgroundColor: colors.bgInput, borderColor: colors.borderStrong }]} activeOpacity={uploading ? 1 : 0.8}>
           {imageUri ? (
-            <Image source={{ uri: imageUri }} style={cf.imgPreview} resizeMode="cover" />
+            <>
+              <Image source={{ uri: imageUri }} style={cf.imgPreview} resizeMode="cover" />
+              {uploading ? (
+                <View style={cf.uploadingOverlay}>
+                  <Ionicons name="cloud-upload-outline" size={28} color="#FFFFFF" />
+                  <Text style={[cf.imgPlaceholderText, { color: '#FFFFFF' }]}>Enviando...</Text>
+                </View>
+              ) : (
+                <View style={cf.imgDarkOverlay} />
+              )}
+            </>
           ) : (
             <View style={cf.imgPlaceholder}>
-              <Ionicons name="image-outline" size={32} color={colors.textMuted} />
-              <Text style={[cf.imgPlaceholderText, { color: colors.textMuted }]}>Adicionar imagem</Text>
+              <Ionicons name="image-outline" size={36} color={colors.textMuted} />
+              <Text style={[cf.imgPlaceholderText, { color: colors.textSecondary }]}>Prévia do banner da categoria</Text>
+              <Text style={[cf.imgPlaceholderSub, { color: colors.textMuted }]}>Toque para escolher da galeria/câmera</Text>
             </View>
           )}
-          <View style={cf.imgOverlay}>
-            <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
-          </View>
+          {!uploading && (
+            <View style={cf.imgOverlay}>
+              <Ionicons name="camera-outline" size={18} color="#FFFFFF" />
+            </View>
+          )}
         </TouchableOpacity>
 
         <Input
@@ -148,9 +199,10 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
           />
         </View>
         <Button
-          title={isEditing ? 'Salvar alterações' : 'Criar categoria'}
+          title={uploading ? 'Aguardando upload...' : isEditing ? 'Salvar alterações' : 'Criar categoria'}
           onPress={handleSave}
           loading={saving}
+          disabled={uploading}
           size="lg"
         />
       </ScrollView>
@@ -160,22 +212,32 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
 
 const cf = StyleSheet.create({
   imgPicker: {
-    alignSelf: 'center',
-    width: 120,
-    height: 120,
+    width: '100%',
+    height: 180,
     borderRadius: 22,
     overflow: 'hidden',
     backgroundColor: '#1A1A1A',
-    marginBottom: 16,
+    marginBottom: 20,
     borderWidth: 1,
+    borderStyle: 'dashed',
     borderColor: '#2A2A2A',
   },
   imgPreview: { width: '100%', height: '100%' },
-  imgPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 8 },
-  imgPlaceholderText: { color: 'rgba(255,255,255,0.2)', fontSize: 11, fontWeight: '600' },
+  imgDarkOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
+  imgPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  imgPlaceholderText: { fontSize: 13, fontWeight: '600' },
+  imgPlaceholderSub: { fontSize: 11 },
   imgOverlay: {
-    position: 'absolute', bottom: 8, right: 8,
-    backgroundColor: '#C0392B', borderRadius: 12,
-    width: 28, height: 28, alignItems: 'center', justifyContent: 'center',
+    position: 'absolute', bottom: 10, right: 10,
+    backgroundColor: '#C0392B', borderRadius: 14,
+    width: 32, height: 32, alignItems: 'center', justifyContent: 'center',
+  },
+  uploadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0,0,0,0.65)',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: 22,
   },
 });

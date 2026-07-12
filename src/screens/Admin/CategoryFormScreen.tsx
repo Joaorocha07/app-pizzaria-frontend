@@ -7,6 +7,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { adminService } from '../../services/adminService';
 import { useTheme } from '../../contexts/ThemeContext';
 import { productService } from '../../services/productService';
+import { uploadService } from '../../services/uploadService';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
@@ -70,7 +71,7 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
   async function pickImage() {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') { Alert.alert('Permissão necessária', 'Permita o acesso à galeria.'); return; }
-    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Images, allowsEditing: true, aspect: [16, 9], quality: 0.8 });
+    const result = await ImagePicker.launchImageLibraryAsync({ mediaTypes: 'images', allowsEditing: true, aspect: [16, 9], quality: 0.8 });
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0];
       await handleAsset(asset.uri, asset.mimeType ?? 'image/jpeg');
@@ -104,11 +105,18 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
     if (!nome.trim()) return Alert.alert('Atenção', 'Nome é obrigatório.');
     const ordemNum = parseInt(ordem, 10);
     if (isNaN(ordemNum)) return Alert.alert('Atenção', 'Ordem deve ser um número.');
-    const remoteImageUrl = urlImagem.trim().startsWith('http') ? urlImagem.trim() : undefined;
 
     setSaving(true);
     try {
-      const payload = { nome: nome.trim(), icone: icone.trim() || undefined, urlImagem: remoteImageUrl, ordem: ordemNum, ativo };
+      let finalImageUrl: string | undefined;
+
+      if (imageUri && !imageUri.startsWith('http')) {
+        finalImageUrl = await uploadService.uploadImage(imageUri, 'categories');
+      } else if (imageUri?.startsWith('http')) {
+        finalImageUrl = imageUri;
+      }
+
+      const payload = { nome: nome.trim(), icone: icone.trim() || undefined, urlImagem: finalImageUrl, ordem: ordemNum, ativo };
       if (isEditing) {
         await adminService.updateCategory(categoryId!, payload);
       } else {

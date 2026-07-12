@@ -2,7 +2,8 @@ import React, { useRef, useMemo } from 'react';
 import { TouchableOpacity, Text, StyleSheet, Animated } from 'react-native';
 import { Categoria } from '../../types';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppColors } from '../../theme/colors';
+import type { AppColors } from '../../theme/theme';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 interface CategoryChipProps {
   categoria: Categoria;
@@ -15,9 +16,9 @@ function createStyles(c: AppColors) {
     chip: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 16,
+      paddingHorizontal: 14,
       paddingVertical: 9,
-      borderRadius: 24,
+      borderRadius: radius.md,
       marginRight: 8,
       borderWidth: 1,
     },
@@ -26,24 +27,19 @@ function createStyles(c: AppColors) {
       borderColor: c.border,
     },
     chipSelected: {
-      backgroundColor: 'rgba(192,57,43,0.85)',
-      borderColor: 'rgba(231,76,60,0.5)',
-      shadowColor: '#C0392B',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.45,
-      shadowRadius: 10,
-      elevation: 6,
+      backgroundColor: c.primary,
+      borderColor: c.accent,
     },
     label: {
-      fontSize: 12,
-      fontWeight: '700',
-      letterSpacing: 0.6,
+      fontFamily: fontFamily.bodySemiBold,
+      fontSize: 11,
+      letterSpacing: letterSpacing.caps,
     },
     labelDefault: {
       color: c.textSecondary,
     },
     labelSelected: {
-      color: '#FFFFFF',
+      color: '#F4EDE1',
     },
   });
 }
@@ -71,7 +67,7 @@ export function CategoryChip({ categoria, selected, onPress }: CategoryChipProps
         activeOpacity={1}
       >
         <Text style={[styles.label, selected ? styles.labelSelected : styles.labelDefault]}>
-          {categoria.nome}
+          {categoria.nome.toUpperCase()}
         </Text>
       </TouchableOpacity>
     </Animated.View>

@@ -5,15 +5,26 @@ import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily } from '../../theme/theme';
 import { AppStackParamList } from '../../navigation/types';
+
+type PlaceholderRoute = 'Pagamentos' | 'Fidelidade' | 'IndiqueAmigo';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
-  route: RouteProp<AppStackParamList, 'Pagamentos'>;
+  route: RouteProp<AppStackParamList, PlaceholderRoute>;
 };
 
 const TITLES: Record<string, string> = {
   Pagamentos: 'Pagamentos',
+  Fidelidade: 'Fidelidade',
+  IndiqueAmigo: 'Indique um amigo',
+};
+
+const ICONS: Record<string, React.ComponentProps<typeof Ionicons>['name']> = {
+  Pagamentos: 'card-outline',
+  Fidelidade: 'star-outline',
+  IndiqueAmigo: 'people-outline',
 };
 
 export function PlaceholderScreen({ navigation, route }: Props) {
@@ -25,7 +36,7 @@ export function PlaceholderScreen({ navigation, route }: Props) {
     <View style={[s.root, { backgroundColor: colors.bg }]}>
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={s.back} activeOpacity={0.75}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={[s.back, { backgroundColor: colors.bgCard }]} activeOpacity={0.75}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={[s.title, { color: colors.text }]}>{title}</Text>
@@ -33,7 +44,7 @@ export function PlaceholderScreen({ navigation, route }: Props) {
 
       {/* Content */}
       <View style={s.body}>
-        <Ionicons name="time-outline" size={52} color={colors.textMuted} />
+        <Ionicons name={ICONS[route.name] ?? 'time-outline'} size={52} color={colors.textMuted} />
         <Text style={[s.label, { color: colors.textMuted }]}>Em breve</Text>
         <Text style={[s.sub, { color: colors.textMuted }]}>
           Esta funcionalidade estará disponível em breve.
@@ -54,11 +65,10 @@ const s = StyleSheet.create({
   },
   back: {
     width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.07)',
     alignItems: 'center', justifyContent: 'center',
   },
-  title: { fontSize: 20, fontWeight: '800' },
+  title: { fontFamily: fontFamily.headingBold, fontSize: 20 },
   body: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, paddingHorizontal: 40 },
-  label: { fontSize: 22, fontWeight: '800' },
-  sub: { fontSize: 13, textAlign: 'center', lineHeight: 20 },
+  label: { fontFamily: fontFamily.headingBold, fontSize: 22 },
+  sub: { fontFamily: fontFamily.bodyRegular, fontSize: 13, textAlign: 'center', lineHeight: 20 },
 });

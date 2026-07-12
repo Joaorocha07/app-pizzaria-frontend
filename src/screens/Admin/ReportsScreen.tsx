@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, Pressable,
   StyleSheet, Animated, Dimensions, RefreshControl,
@@ -9,24 +9,45 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { adminService, RelatorioVendas, RelatorioProduto } from '../../services/adminService';
 import { Pedido } from '../../types';
 import { formatCurrency } from '../../utils/helpers';
+import { useTheme } from '../../contexts/ThemeContext';
+import { AppColors } from '../../theme/theme';
 
 const { width: SW } = Dimensions.get('window');
 const H_PAD = 20;
 
-// ─── Tokens ──────────────────────────────────────────────
-const BG     = '#0A0A0A';
-const CARD   = '#111111';
-const BORDER = '#1E1E1E';
-const TEXT   = '#F5F5F5';
-const TEXT2  = '#888888';
-const RED    = '#C0392B';
-const RED_S  = 'rgba(192,57,43,0.15)';
-const GOLD   = '#B8860B';
-const GOLD_S = 'rgba(184,134,11,0.15)';
-const GREEN  = '#27AE60';
-const GREEN_S = 'rgba(39,174,96,0.15)';
-const BLUE   = '#3498DB';
-const BLUE_S = 'rgba(52,152,219,0.15)';
+// ─── Tokens derivados do tema (cada componente lê via useTheme) ──
+// Helper único para não repetir a mesma desestruturação em cada função.
+function useTokens() {
+  const { colors: c } = useTheme();
+  return {
+    c,
+    BG: c.bg, CARD: c.bgCard, BORDER: c.border, TEXT: c.text, TEXT2: c.textSecondary,
+    RED: c.primary, RED_S: `${c.primary}26`,
+    GOLD: c.accent, GOLD_S: `${c.accent}26`,
+    GREEN: c.success, GREEN_S: `${c.success}26`,
+    BLUE: c.info, BLUE_S: `${c.info}26`,
+    AMBER: c.warning,
+  };
+}
+
+function getCardStyle(c: AppColors): object {
+  return {
+    backgroundColor: c.bgCard, borderRadius: 16, padding: 16,
+    borderWidth: 1, borderColor: c.border,
+    shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4, shadowRadius: 24, elevation: 8,
+  };
+}
+
+function getStatusCfg(c: AppColors): Record<string, { label: string; color: string }> {
+  return {
+    PENDENTE:   { label: 'Pendentes',  color: c.warning },
+    PREPARANDO: { label: 'Preparando', color: c.warning },
+    ENTREGANDO: { label: 'Em entrega', color: c.info },
+    ENTREGUE:   { label: 'Entregues',  color: c.success },
+    CANCELADO:  { label: 'Cancelados', color: c.primary },
+  };
+}
 
 const TABS = ['Operacional', 'Financeiro', 'Clientes', 'Produtos'] as const;
 type TabType = typeof TABS[number];
@@ -59,16 +80,9 @@ function elapsed(criadoEm: string): string {
   return `${Math.floor(mins / 60)}h${String(mins % 60).padStart(2, '0')}`;
 }
 
-const STATUS_CFG: Record<string, { label: string; color: string }> = {
-  PENDENTE:   { label: 'Pendentes',  color: '#F39C12' },
-  PREPARANDO: { label: 'Preparando', color: '#F59E0B' },
-  ENTREGANDO: { label: 'Em entrega', color: BLUE },
-  ENTREGUE:   { label: 'Entregues',  color: GREEN },
-  CANCELADO:  { label: 'Cancelados', color: RED },
-};
-
 // ─── Skel (shimmer) ───────────────────────────────────────
 function Skel({ w, h, r = 8, style }: { w: number | string; h: number; r?: number; style?: object }) {
+  const { c } = useTokens();
   const op = useRef(new Animated.Value(0.4)).current;
   useEffect(() => {
     Animated.loop(Animated.sequence([
@@ -76,7 +90,7 @@ function Skel({ w, h, r = 8, style }: { w: number | string; h: number; r?: numbe
       Animated.timing(op, { toValue: 0.4, duration: 700, useNativeDriver: true }),
     ])).start();
   }, []);
-  return <Animated.View style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: '#1A1A1A', opacity: op }, style]} />;
+  return <Animated.View style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: c.bgCard, opacity: op }, style]} />;
 }
 
 // ─── AnimatedBar (barra vertical com spring de entrada) ──
@@ -106,6 +120,7 @@ function BarFill({ pct, color, delay = 0 }: { pct: number; color: string; delay?
 
 // ─── ProgressBar (horizontal com gradiente) ───────────────
 function ProgressBar({ pct, gradColors }: { pct: number; gradColors: [string, string] }) {
+  const { BORDER } = useTokens();
   const w = useRef(new Animated.Value(0)).current;
   useEffect(() => {
     Animated.spring(w, { toValue: pct, useNativeDriver: false, speed: 10, bounciness: 4 }).start();
@@ -119,14 +134,6 @@ function ProgressBar({ pct, gradColors }: { pct: number; gradColors: [string, st
   );
 }
 
-// ─── Shared card style ────────────────────────────────────
-const cardStyle: object = {
-  backgroundColor: CARD, borderRadius: 16, padding: 16,
-  borderWidth: 1, borderColor: BORDER,
-  shadowColor: '#000', shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.4, shadowRadius: 24, elevation: 8,
-};
-
 // ─── MetricCard (2x2 header) ─────────────────────────────
 function MetricCard({
   icon, label, displayValue, iconColor, iconBg, badge, badgeUp, isLoading, textColor,
@@ -135,6 +142,8 @@ function MetricCard({
   iconColor: string; iconBg: string; badge: string; badgeUp: boolean;
   isLoading: boolean; textColor?: string;
 }) {
+  const { c, TEXT, TEXT2, GREEN, GREEN_S, RED, RED_S } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
   const scale = useRef(new Animated.Value(1)).current;
   const entrance = useRef(new Animated.Value(0)).current;
   useEffect(() => {
@@ -173,6 +182,9 @@ function StatusSegments({ porStatus, total, isLoading }: {
   porStatus: { status: string; quantidade: number }[];
   total: number; isLoading: boolean;
 }) {
+  const { c, TEXT, TEXT2, BORDER } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
+  const STATUS_CFG = useMemo(() => getStatusCfg(c), [c]);
   return (
     <View style={[cardStyle, { marginTop: 14 }]}>
       <Text style={{ color: TEXT, fontSize: 15, fontWeight: '800', marginBottom: 14 }}>Status dos pedidos</Text>
@@ -214,6 +226,8 @@ function StatusSegments({ porStatus, total, isLoading }: {
 
 // ─── HourlyChart ─────────────────────────────────────────
 function HourlyChart({ orders }: { orders: Pedido[] }) {
+  const { c, TEXT, TEXT2, RED } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
   const hours = Array.from({ length: 13 }, (_, i) => i + 10);
   const counts = hours.map(h => orders.filter(o => new Date(o.criadoEm).getHours() === h).length);
   const max = Math.max(...counts, 1);
@@ -228,7 +242,7 @@ function HourlyChart({ orders }: { orders: Pedido[] }) {
             {counts[i] > 0 && (
               <Text style={{ color: TEXT2, fontSize: 7, marginBottom: 2 }}>{counts[i]}</Text>
             )}
-            <AnimatedBar pct={counts[i] / max} color={h === nowH ? RED : '#2A2A2A'} delay={i * 40} />
+            <AnimatedBar pct={counts[i] / max} color={h === nowH ? RED : c.borderStrong} delay={i * 40} />
             {i % 4 === 0 && <Text style={{ color: TEXT2, fontSize: 7, marginTop: 4 }}>{h}h</Text>}
           </View>
         ))}
@@ -238,9 +252,11 @@ function HourlyChart({ orders }: { orders: Pedido[] }) {
 }
 
 // ─── WeeklyBars ──────────────────────────────────────────
-function WeeklyBars({ data, barColor = RED, isLoading }: {
+function WeeklyBars({ data, barColor, isLoading }: {
   data: number[]; barColor?: string; isLoading: boolean;
 }) {
+  const { c, TEXT2, RED } = useTokens();
+  const resolvedBarColor = barColor ?? RED;
   const max = Math.max(...data, 1);
   return (
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', height: 100 }}>
@@ -253,8 +269,8 @@ function WeeklyBars({ data, barColor = RED, isLoading }: {
         );
         return (
           <View key={i} style={{ flex: 1, alignItems: 'center' }}>
-            {v > 0 && <Text style={{ color: isLast ? barColor : TEXT2, fontSize: 7, marginBottom: 2 }}>{v > 999 ? `${(v/1000).toFixed(1)}k` : v}</Text>}
-            <AnimatedBar pct={v / max} color={isLast ? barColor : '#2A2A2A'} delay={i * 50} />
+            {v > 0 && <Text style={{ color: isLast ? resolvedBarColor : TEXT2, fontSize: 7, marginBottom: 2 }}>{v > 999 ? `${(v/1000).toFixed(1)}k` : v}</Text>}
+            <AnimatedBar pct={v / max} color={isLast ? resolvedBarColor : c.borderStrong} delay={i * 50} />
             <Text style={{ color: TEXT2, fontSize: 7, marginTop: 4 }}>{dayAbbr(data.length - 1 - i)}</Text>
           </View>
         );
@@ -267,6 +283,9 @@ function WeeklyBars({ data, barColor = RED, isLoading }: {
 // ─── ABA OPERACIONAL ─────────────────────────────────────
 // ═══════════════════════════════════════════════════════
 function TabOperacional() {
+  const { c, BG, TEXT, TEXT2, RED, RED_S, GREEN } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
+  const STATUS_CFG = useMemo(() => getStatusCfg(c), [c]);
   const [orders, setOrders] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -350,6 +369,8 @@ function TabOperacional() {
 // ─── ABA FINANCEIRO ──────────────────────────────────────
 // ═══════════════════════════════════════════════════════
 function TabFinanceiro() {
+  const { c, BORDER, TEXT, TEXT2, RED, GOLD, GOLD_S, GREEN, BLUE, BLUE_S, RED_S } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
   const [periodo, setPeriodo] = useState<Periodo>('semana');
   const [vendas, setVendas] = useState<RelatorioVendas | null>(null);
   const [prevVendas, setPrevVendas] = useState<RelatorioVendas | null>(null);
@@ -486,6 +507,8 @@ function TabFinanceiro() {
 // ─── ABA CLIENTES ────────────────────────────────────────
 // ═══════════════════════════════════════════════════════
 function TabClientes() {
+  const { c, TEXT, TEXT2, RED, GOLD, BLUE, BLUE_S } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
   const [orders, setOrders] = useState<Pedido[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -505,7 +528,7 @@ function TabClientes() {
   const userCounts: Record<number, number> = {};
   orders.forEach(o => { userCounts[o.usuarioId] = (userCounts[o.usuarioId] ?? 0) + 1; });
   const uniqueUsers = Object.keys(userCounts).length;
-  const loyalCount = Object.values(userCounts).filter(c => c > 1).length;
+  const loyalCount = Object.values(userCounts).filter(n => n > 1).length;
   const loyaltyPct = uniqueUsers > 0 ? loyalCount / uniqueUsers : 0;
 
   // First order date per user → new customers per day (last 7)
@@ -573,6 +596,8 @@ function TabClientes() {
 // ─── ABA PRODUTOS ────────────────────────────────────────
 // ═══════════════════════════════════════════════════════
 function TabProdutos() {
+  const { c, BORDER, TEXT, TEXT2, RED, RED_S, GOLD } = useTokens();
+  const cardStyle = useMemo(() => getCardStyle(c), [c]);
   const [produtos, setProdutos] = useState<RelatorioProduto[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -633,7 +658,7 @@ function TabProdutos() {
                     </View>
                   </View>
                   <View style={{ height: 4, backgroundColor: BORDER, borderRadius: 2, overflow: 'hidden' }}>
-                    <BarFill pct={pct} color={isFirst ? RED : '#2A2A2A'} delay={i * 80} />
+                    <BarFill pct={pct} color={isFirst ? RED : c.borderStrong} delay={i * 80} />
                   </View>
                 </View>
               );
@@ -665,6 +690,7 @@ function TabProdutos() {
 // ─── ADMINREPORTSSCREEN ──────────────────────────────────
 // ═══════════════════════════════════════════════════════
 export function AdminReportsScreen() {
+  const { BG, BORDER, TEXT, TEXT2, RED, RED_S, GOLD, GOLD_S, GREEN, GREEN_S, BLUE, BLUE_S } = useTokens();
   const insets = useSafeAreaInsets();
   const [activeTab, setActiveTab] = useState<TabType>('Operacional');
   const [vendas, setVendas] = useState<RelatorioVendas | null>(null);

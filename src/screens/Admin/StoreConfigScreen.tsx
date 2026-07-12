@@ -68,7 +68,7 @@ export function AdminStoreConfigScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#E63946"
+            tintColor="#8B1A1A"
           />
         }
       >

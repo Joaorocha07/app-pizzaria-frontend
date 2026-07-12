@@ -1,5 +1,10 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily } from '../../theme/theme';
+import { Button } from './Button';
+import { Ornament } from './Ornament';
 
 interface ErrorMessageProps {
   message: string;
@@ -7,17 +12,29 @@ interface ErrorMessageProps {
 }
 
 export function ErrorMessage({ message, onRetry }: ErrorMessageProps) {
+  const { colors } = useTheme();
   return (
-    <View className="items-center justify-center py-8 px-4">
-      <Text className="text-danger text-base text-center mb-4">{message}</Text>
-      {onRetry && (
-        <TouchableOpacity
-          onPress={onRetry}
-          className="bg-primary px-6 py-2 rounded-xl"
-        >
-          <Text className="text-offwhite font-bold">Tentar novamente</Text>
-        </TouchableOpacity>
-      )}
+    <View style={s.container}>
+      <Ionicons name="alert-circle-outline" size={40} color={colors.danger} />
+      <Text style={[s.message, { color: colors.textSecondary }]}>{message}</Text>
+      <Ornament width={120} style={{ marginBottom: 16 }} />
+      {onRetry && <Button title="Tentar novamente" variant="outline" size="sm" onPress={onRetry} />}
     </View>
   );
 }
+
+const s = StyleSheet.create({
+  container: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 32,
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  message: {
+    fontFamily: fontFamily.bodyRegular,
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+});

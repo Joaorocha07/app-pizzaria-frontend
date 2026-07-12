@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { darkColors, lightColors, AppColors } from '../theme/colors';
+import { darkColors, lightColors, AppColors } from '../theme/theme';
 
 type ThemeMode = 'dark' | 'light';
 
@@ -18,7 +18,8 @@ const ThemeContext = createContext<ThemeContextData>({} as ThemeContextData);
 const THEME_KEY = '@pizzaria:theme';
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [mode, setMode] = useState<ThemeMode>('dark');
+  /* Pastel "Pergaminho" é a identidade principal — claro por padrão */
+  const [mode, setMode] = useState<ThemeMode>('light');
   const [needsThemePick, setNeedsThemePick] = useState(false);
 
   useEffect(() => {

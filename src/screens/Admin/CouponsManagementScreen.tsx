@@ -64,7 +64,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AdminCouponForm', {})}
             className="p-2"
           >
-            <Ionicons name="add-circle" size={28} color="#E63946" />
+            <Ionicons name="add-circle" size={28} color="#8B1A1A" />
           </TouchableOpacity>
         }
       />
@@ -75,7 +75,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#E63946"
+            tintColor="#8B1A1A"
           />
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -90,7 +90,7 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
           <View className="bg-dark-card rounded-2xl p-4 mb-3">
             <View className="flex-row items-center justify-between mb-2">
               <View className="flex-row items-center gap-2">
-                <Ionicons name="pricetag-outline" size={16} color="#F4A261" />
+                <Ionicons name="pricetag-outline" size={16} color="#B8862E" />
                 <Text className="text-offwhite font-bold text-base">{item.codigo}</Text>
               </View>
               <View className={`px-2 py-0.5 rounded-full ${item.ativo ? 'bg-green-900' : 'bg-gray-800'}`}>
@@ -120,13 +120,13 @@ export function AdminCouponsManagementScreen({ navigation }: Props) {
                   onPress={() => navigation.navigate('AdminCouponForm', { couponId: item.id })}
                   className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
                 >
-                  <Ionicons name="create-outline" size={18} color="#F4A261" />
+                  <Ionicons name="create-outline" size={18} color="#B8862E" />
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item)}
                   className="w-9 h-9 bg-red-900/30 rounded-xl items-center justify-center"
                 >
-                  <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                  <Ionicons name="trash-outline" size={18} color="#A23B3B" />
                 </TouchableOpacity>
               </View>
             </View>

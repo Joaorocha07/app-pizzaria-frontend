@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import {
   Alert,
+  Animated,
   ScrollView,
   StyleSheet,
   Switch,
@@ -13,12 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 import { AppStackParamList } from '../../navigation/types';
 
 type Props = { navigation: NativeStackNavigationProp<AppStackParamList> };
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
-
-const PRIMARY = '#C0392B';
 
 /* ─── Row card (ícone + label, sem seta) ──────────── */
 function MenuItem({
@@ -35,15 +35,28 @@ function MenuItem({
   iconColor?: string;
 }) {
   const { colors } = useTheme();
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function pressIn() {
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 60 }).start();
+  }
+  function pressOut() {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
+  }
+
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[s.card, { backgroundColor: colors.bgCard }]}
-      activeOpacity={0.74}
-    >
-      <Ionicons name={icon} size={22} color={iconColor ?? colors.text} />
-      <Text style={[s.cardLabel, { color: labelColor ?? colors.text }]}>{label}</Text>
-    </TouchableOpacity>
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity
+        onPress={onPress}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
+        style={[s.card, { backgroundColor: colors.bgCard }]}
+        activeOpacity={0.85}
+      >
+        <Ionicons name={icon} size={22} color={iconColor ?? colors.text} />
+        <Text style={[s.cardLabel, { color: labelColor ?? colors.text }]}>{label}</Text>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
@@ -76,7 +89,7 @@ export function ProfileScreen({ navigation }: Props) {
       >
         {/* ── Header ─────────────────────────────── */}
         <View style={s.header}>
-          <View style={s.avatar}>
+          <View style={[s.avatar, { backgroundColor: colors.primary }]}>
             <Text style={s.avatarText}>{initials}</Text>
           </View>
           <View style={s.headerText}>
@@ -105,7 +118,7 @@ export function ProfileScreen({ navigation }: Props) {
         </View>
 
         {/* ── Seção 2 ─────────────────────────────── */}
-        <Text style={[s.sectionTitle, { color: colors.text }]}>Pagamentos e Benefícios</Text>
+        <Text style={[s.sectionTitle, { color: colors.textSecondary }]}>Pagamentos e Benefícios</Text>
         <View style={s.section}>
           <MenuItem
             icon="card-outline"
@@ -123,6 +136,16 @@ export function ProfileScreen({ navigation }: Props) {
             icon="pricetag-outline"
             label="Cupons"
             onPress={() => navigation.navigate('Cupons')}
+          />
+          <MenuItem
+            icon="star-outline"
+            label="Fidelidade"
+            onPress={() => navigation.navigate('Fidelidade')}
+          />
+          <MenuItem
+            icon="people-outline"
+            label="Indique um amigo"
+            onPress={() => navigation.navigate('IndiqueAmigo')}
           />
         </View>
 
@@ -143,8 +166,8 @@ export function ProfileScreen({ navigation }: Props) {
             <Switch
               value={isDark}
               onValueChange={toggleTheme}
-              trackColor={{ false: colors.border, true: colors.borderStrong }}
-              thumbColor={isDark ? '#FFFFFF' : '#1A1A1A'}
+              trackColor={{ false: colors.border, true: colors.primaryDark }}
+              thumbColor={isDark ? colors.text : colors.primary}
               pointerEvents="none"
             />
           </TouchableOpacity>
@@ -154,8 +177,8 @@ export function ProfileScreen({ navigation }: Props) {
             icon="log-out-outline"
             label="Sair da conta"
             onPress={handleLogout}
-            labelColor={PRIMARY}
-            iconColor={PRIMARY}
+            labelColor={colors.primary}
+            iconColor={colors.primary}
           />
         </View>
 
@@ -187,7 +210,6 @@ const s = StyleSheet.create({
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#FFFFFF',
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
@@ -197,9 +219,9 @@ const s = StyleSheet.create({
     elevation: 4,
   },
   avatarText: {
-    color: '#1A1A1A',
+    color: '#F4EDE1',
+    fontFamily: fontFamily.headingBold,
     fontSize: 22,
-    fontWeight: '900',
     letterSpacing: 1,
   },
   headerText: {
@@ -207,19 +229,21 @@ const s = StyleSheet.create({
     gap: 2,
   },
   welcome: {
+    fontFamily: fontFamily.bodyMedium,
     fontSize: 12,
-    fontWeight: '500',
   },
   userName: {
+    fontFamily: fontFamily.headingBold,
     fontSize: 24,
-    fontWeight: '900',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
   },
 
   /* Sections */
   sectionTitle: {
-    fontSize: 12,
-    fontWeight: '400',
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: letterSpacing.capsWide,
+    textTransform: 'uppercase',
     marginBottom: 10,
     marginLeft: 2,
   },
@@ -232,14 +256,14 @@ const s = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderRadius: 18,
+    borderRadius: radius.md,
     paddingVertical: 18,
     paddingHorizontal: 20,
     gap: 16,
   },
   cardLabel: {
+    fontFamily: fontFamily.bodySemiBold,
     fontSize: 15,
-    fontWeight: '600',
     letterSpacing: 0.1,
   },
 
@@ -251,16 +275,16 @@ const s = StyleSheet.create({
     gap: 5,
   },
   footerBrand: {
+    fontFamily: fontFamily.bodyBold,
     fontSize: 15,
-    fontWeight: '700',
     letterSpacing: 0.3,
   },
   footerBy: {
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 11,
-    fontWeight: '400',
   },
   footerVersion: {
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 10,
-    fontWeight: '400',
   },
 });

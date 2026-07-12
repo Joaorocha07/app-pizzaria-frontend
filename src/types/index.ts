@@ -78,6 +78,8 @@ export interface Pedido {
   metodoPagamento: MetodoPagamento;
   cupomId?: number | null;
   criadoEm: string;
+  /** Já vem incluso em GET /orders/me e GET /orders/:id (relação `itens` do Prisma) */
+  itens?: ItemPedidoDetalhado[];
 }
 
 export interface ItemPedido {
@@ -86,6 +88,14 @@ export interface ItemPedido {
   bordaId?: number | null;
   quantidade: number;
   preco: number;
+}
+
+export interface ItemPedidoDetalhado extends ItemPedido {
+  id: number;
+  pedidoId: number;
+  produto: Produto;
+  tamanhoProduto?: TamanhoProduto | null;
+  borda?: Borda | null;
 }
 
 export interface HistoricoStatusPedido {

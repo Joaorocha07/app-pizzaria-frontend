@@ -43,7 +43,7 @@ function SectionCard({ label, descricao, icon, onPress }: {
         {/* Light overlay on press */}
         <Animated.View style={[StyleSheet.absoluteFill, s.pressOverlay, { opacity: overlay }]} />
 
-        <Ionicons name={icon} size={22} color="#F5F5F5" />
+        <Ionicons name={icon} size={22} color="#F5F0E8" />
 
         <View style={s.textWrap}>
           <Text style={s.label}>{label}</Text>
@@ -87,24 +87,24 @@ export function AdminMoreScreen({ navigation }: Props) {
 }
 
 const s = StyleSheet.create({
-  root:   { flex: 1, backgroundColor: '#0A0A0A' },
+  root:   { flex: 1, backgroundColor: '#0F0D0C' },
 
   header: {
     alignItems: 'center',
     paddingHorizontal: 20,
     paddingBottom: 24,
   },
-  headerTitle: { color: '#F5F5F5', fontSize: 26, fontWeight: '800' },
+  headerTitle: { color: '#F5F0E8', fontSize: 26, fontWeight: '800' },
   headerSub:   { color: '#888888', fontSize: 13, fontWeight: '500', marginTop: 4 },
 
   scroll:   { flex: 1 },
   content:  { paddingHorizontal: 16, paddingBottom: 32, gap: 10 },
 
   card: {
-    backgroundColor: '#111111',
+    backgroundColor: '#1A1614',
     borderRadius: 18,
     borderWidth: 1,
-    borderColor: '#1E1E1E',
+    borderColor: '#322619',
     overflow: 'hidden',
   },
   cardInner: {
@@ -120,6 +120,6 @@ const s = StyleSheet.create({
   },
 
   textWrap:    { flex: 1 },
-  label:       { color: '#F5F5F5', fontSize: 16, fontWeight: '700' },
+  label:       { color: '#F5F0E8', fontSize: 16, fontWeight: '700' },
   description: { color: '#888888', fontSize: 12, marginTop: 3 },
 });

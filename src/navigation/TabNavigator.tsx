@@ -2,11 +2,11 @@ import React, { useRef, useEffect, useState } from 'react';
 import { View, Text, Pressable, Animated, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
+import { fontFamily } from '../theme/theme';
 import { AppHeader } from '../components/common/AppHeader';
 import { HomeScreen } from '../screens/Home/HomeScreen';
 import { MenuScreen } from '../screens/Menu/MenuScreen';
@@ -33,42 +33,39 @@ const TAB_ICONS: Record<string, { active: IoniconName; inactive: IoniconName }> 
   Perfil:          { active: 'person',       inactive: 'person-outline' },
 };
 
-const ACTIVE_BG = '#C0392B';
-
 /* ─── TabItem ────────────────────────────────────────────────── */
 interface TabItemProps {
   routeName: string;
   label: string;
   focused: boolean;
   inactiveColor: string;
+  activeColor: string;
   onPress: () => void;
 }
 
-function TabItem({ routeName, label, focused, inactiveColor, onPress }: TabItemProps) {
-  const pillScale = useRef(new Animated.Value(focused ? 1 : 0.6)).current;
-  const pillOpacity = useRef(new Animated.Value(focused ? 1 : 0)).current;
+/**
+ * Aba estilo Nobile: sem pill — o ativo ganha um pequeno diamante dourado
+ * sob o ícone e o label em CAPS espaçada na cor primária.
+ */
+function TabItem({ routeName, label, focused, inactiveColor, activeColor, onPress }: TabItemProps) {
+  const diamondScale = useRef(new Animated.Value(focused ? 1 : 0)).current;
   const contentScale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (focused) {
       Animated.parallel([
-        Animated.spring(pillScale, {
+        Animated.spring(diamondScale, {
           toValue: 1,
           useNativeDriver: true,
-          speed: 35,
-          bounciness: 10,
-        }),
-        Animated.timing(pillOpacity, {
-          toValue: 1,
-          duration: 180,
-          useNativeDriver: true,
+          speed: 30,
+          bounciness: 12,
         }),
         Animated.sequence([
           Animated.spring(contentScale, {
-            toValue: 1.18,
+            toValue: 1.12,
             useNativeDriver: true,
             speed: 60,
-            bounciness: 14,
+            bounciness: 12,
           }),
           Animated.spring(contentScale, {
             toValue: 1,
@@ -79,23 +76,16 @@ function TabItem({ routeName, label, focused, inactiveColor, onPress }: TabItemP
         ]),
       ]).start();
     } else {
-      Animated.parallel([
-        Animated.timing(pillOpacity, {
-          toValue: 0,
-          duration: 160,
-          useNativeDriver: true,
-        }),
-        Animated.spring(pillScale, {
-          toValue: 0.7,
-          useNativeDriver: true,
-          speed: 30,
-        }),
-      ]).start();
+      Animated.timing(diamondScale, {
+        toValue: 0,
+        duration: 140,
+        useNativeDriver: true,
+      }).start();
     }
   }, [focused]);
 
   const icons = TAB_ICONS[routeName] ?? { active: 'ellipse', inactive: 'ellipse-outline' };
-  const iconColor = focused ? '#FFFFFF' : inactiveColor;
+  const iconColor = focused ? activeColor : inactiveColor;
 
   return (
     <Pressable
@@ -105,18 +95,6 @@ function TabItem({ routeName, label, focused, inactiveColor, onPress }: TabItemP
       accessibilityState={{ selected: focused }}
       accessibilityLabel={label}
     >
-      {/* Active pill background */}
-      <Animated.View
-        style={[
-          tabItemStyles.pill,
-          {
-            opacity: pillOpacity,
-            transform: [{ scale: pillScale }],
-          },
-        ]}
-      />
-
-      {/* Icon + label */}
       <Animated.View
         style={[tabItemStyles.content, { transform: [{ scale: contentScale }] }]}
       >
@@ -126,8 +104,15 @@ function TabItem({ routeName, label, focused, inactiveColor, onPress }: TabItemP
           color={iconColor}
         />
         <Text style={[tabItemStyles.label, { color: iconColor }]}>
-          {label}
+          {label.toUpperCase()}
         </Text>
+        {/* Diamante indicador do ativo */}
+        <Animated.View
+          style={[
+            tabItemStyles.diamond,
+            { backgroundColor: activeColor, transform: [{ rotate: '45deg' }, { scale: diamondScale }] },
+          ]}
+        />
       </Animated.View>
     </Pressable>
   );
@@ -139,24 +124,20 @@ const tabItemStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 6,
-    position: 'relative',
-  },
-  pill: {
-    position: 'absolute',
-    width: 60,
-    height: 52,
-    borderRadius: 16,
-    backgroundColor: ACTIVE_BG,
   },
   content: {
     alignItems: 'center',
     gap: 3,
-    zIndex: 1,
   },
   label: {
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 9,
+    letterSpacing: 1.2,
+  },
+  diamond: {
+    width: 5,
+    height: 5,
+    marginTop: 1,
   },
 });
 
@@ -171,48 +152,50 @@ function CustomTabBar({ state, descriptors, navigation, onTabChange }: CustomTab
     onTabChange?.(focusedName);
   }, [focusedName]);
   const insets = useSafeAreaInsets();
-  const { colors, isDark } = useTheme();
-
-  const gradientColors = [colors.tabBar, colors.tabBar] as [string, string];
+  const { colors } = useTheme();
 
   return (
-    <LinearGradient
-      colors={gradientColors}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-      style={[
-        tabBarStyles.bar,
-        {
-          paddingBottom: insets.bottom || 12,
-        },
-      ]}
-    >
-      {state.routes.map((route, index) => {
-        const { options } = descriptors[route.key];
-        const focused = state.index === index;
-        const label = (options.tabBarLabel ?? route.name) as string;
+    <View style={{ backgroundColor: colors.tabBar }}>
+      {/* Filete duplo superior — assinatura de impresso vintage */}
+      <View style={[tabBarStyles.rule, { backgroundColor: colors.tabBarBorder }]} />
+      <View style={[tabBarStyles.ruleThin, { backgroundColor: colors.tabBarBorder }]} />
 
-        return (
-          <TabItem
-            key={route.key}
-            routeName={route.name}
-            label={label}
-            focused={focused}
-            inactiveColor={colors.tabInactive}
-            onPress={() => {
-              const event = navigation.emit({
-                type: 'tabPress',
-                target: route.key,
-                canPreventDefault: true,
-              });
-              if (!focused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            }}
-          />
-        );
-      })}
-    </LinearGradient>
+      <View
+        style={[
+          tabBarStyles.bar,
+          {
+            paddingBottom: insets.bottom || 12,
+          },
+        ]}
+      >
+        {state.routes.map((route, index) => {
+          const { options } = descriptors[route.key];
+          const focused = state.index === index;
+          const label = (options.tabBarLabel ?? route.name) as string;
+
+          return (
+            <TabItem
+              key={route.key}
+              routeName={route.name}
+              label={label}
+              focused={focused}
+              inactiveColor={colors.tabInactive}
+              activeColor={colors.tabActive}
+              onPress={() => {
+                const event = navigation.emit({
+                  type: 'tabPress',
+                  target: route.key,
+                  canPreventDefault: true,
+                });
+                if (!focused && !event.defaultPrevented) {
+                  navigation.navigate(route.name);
+                }
+              }}
+            />
+          );
+        })}
+      </View>
+    </View>
   );
 }
 
@@ -221,6 +204,13 @@ const tabBarStyles = StyleSheet.create({
     flexDirection: 'row',
     paddingTop: 8,
     elevation: 0,
+  },
+  rule: {
+    height: 1,
+  },
+  ruleThin: {
+    height: StyleSheet.hairlineWidth,
+    marginTop: 2,
   },
 });
 

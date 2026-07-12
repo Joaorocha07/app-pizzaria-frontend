@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { userService } from '../../services/userService';
+import { useTheme } from '../../contexts/ThemeContext';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
@@ -13,6 +14,7 @@ type Props = {
 };
 
 export function ChangePasswordScreen({ navigation }: Props) {
+  const { colors } = useTheme();
   const [senhaAtual, setSenhaAtual] = useState('');
   const [novaSenha, setNovaSenha] = useState('');
   const [confirmar, setConfirmar] = useState('');
@@ -46,7 +48,7 @@ export function ChangePasswordScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-dark"
+      style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <Header title="Alterar senha" onBack={() => navigation.goBack()} />
       <ScrollView className="flex-1 px-4" keyboardShouldPersistTaps="handled">

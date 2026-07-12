@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Alert, KeyboardAvoidingView, Platform } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 import { userService } from '../../services/userService';
 import { Input } from '../../components/common/Input';
 import { Button } from '../../components/common/Button';
@@ -14,6 +15,7 @@ type Props = {
 
 export function EditProfileScreen({ navigation }: Props) {
   const { usuario, refreshUser } = useAuth();
+  const { colors } = useTheme();
   const [nome, setNome] = useState(usuario?.nome ?? '');
   const [telefone, setTelefone] = useState(usuario?.telefone ?? '');
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ export function EditProfileScreen({ navigation }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      className="flex-1 bg-dark"
+      style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <Header title="Editar perfil" onBack={() => navigation.goBack()} />
       <ScrollView className="flex-1 px-4" keyboardShouldPersistTaps="handled">

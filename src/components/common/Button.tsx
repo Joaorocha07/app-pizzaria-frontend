@@ -2,14 +2,15 @@ import React, { useRef } from 'react';
 import {
   TouchableOpacity,
   Text,
+  View,
   ActivityIndicator,
   StyleSheet,
   ViewStyle,
   TouchableOpacityProps,
   Animated,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 interface ButtonProps extends TouchableOpacityProps {
   title: string;
@@ -19,12 +20,16 @@ interface ButtonProps extends TouchableOpacityProps {
   style?: ViewStyle;
 }
 
-const SIZE: Record<string, { paddingVertical: number; paddingHorizontal: number; borderRadius: number; fontSize: number }> = {
-  sm: { paddingVertical: 9,  paddingHorizontal: 16, borderRadius: 12, fontSize: 13 },
-  md: { paddingVertical: 13, paddingHorizontal: 24, borderRadius: 14, fontSize: 15 },
-  lg: { paddingVertical: 17, paddingHorizontal: 32, borderRadius: 16, fontSize: 17 },
+const SIZE: Record<string, { paddingVertical: number; paddingHorizontal: number; fontSize: number }> = {
+  sm: { paddingVertical: 8,  paddingHorizontal: 16, fontSize: 11 },
+  md: { paddingVertical: 12, paddingHorizontal: 24, fontSize: 12 },
+  lg: { paddingVertical: 15, paddingHorizontal: 32, fontSize: 13 },
 };
 
+/**
+ * Botão "letterpress" Nobile: retângulo de canto reto, label em CAPS espaçada;
+ * primary = borgonha com filete dourado interno. Sem glow, sem gradiente.
+ */
 export function Button({
   title,
   variant = 'primary',
@@ -41,92 +46,64 @@ export function Button({
   const scale = useRef(new Animated.Value(1)).current;
 
   const VARIANT = {
-    primary:   { gradient: ['#C0392B', '#922B21'] as [string, string], bg: '#C0392B', text: '#FFFFFF' },
-    secondary: { gradient: ['#B8860B', '#9A7209'] as [string, string], bg: '#B8860B', text: '#0A0A0A' },
-    outline:   { bg: colors.bgCard, text: colors.text, border: colors.borderStrong },
-    ghost:     { bg: colors.bgCard, text: colors.primary },
+    primary:   { bg: colors.primary, text: '#F4EDE1', border: colors.primary, inner: colors.accent },
+    secondary: { bg: colors.bgCard, text: colors.primary, border: colors.primary, inner: null },
+    outline:   { bg: 'transparent', text: colors.text, border: colors.borderStrong, inner: null },
+    ghost:     { bg: 'transparent', text: colors.primary, border: 'transparent', inner: null },
   };
 
   const v = VARIANT[variant];
 
   function handlePressIn() {
-    Animated.spring(scale, { toValue: 0.96, useNativeDriver: true, speed: 60, bounciness: 4 }).start();
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 60, bounciness: 4 }).start();
   }
 
   function handlePressOut() {
-    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 8 }).start();
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 40, bounciness: 6 }).start();
   }
 
   const inner = loading ? (
     <ActivityIndicator color={v.text} size="small" />
   ) : (
-    <Text style={[styles.text, { color: v.text, fontSize: s.fontSize }]}>{title}</Text>
+    <Text
+      style={[
+        styles.text,
+        { color: v.text, fontSize: s.fontSize },
+      ]}
+      numberOfLines={1}
+    >
+      {title.toUpperCase()}
+    </Text>
   );
 
-  if ('gradient' in v && v.gradient && !isDisabled) {
-    return (
-      <Animated.View style={[{ transform: [{ scale }] }, style]}>
-        <TouchableOpacity
-          disabled={isDisabled}
-          onPress={onPress}
-          onPressIn={handlePressIn}
-          onPressOut={handlePressOut}
-          activeOpacity={1}
-          style={[
-            styles.base,
-            {
-              borderRadius: s.borderRadius,
-              shadowColor: '#C0392B',
-              shadowOffset: { width: 0, height: 8 },
-              shadowOpacity: 0.45,
-              shadowRadius: 18,
-              elevation: 10,
-            },
-          ]}
-          {...props}
-        >
-          <LinearGradient
-            colors={v.gradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.gradient,
-              {
-                paddingVertical: s.paddingVertical,
-                paddingHorizontal: s.paddingHorizontal,
-                borderRadius: s.borderRadius,
-              },
-            ]}
-          >
-            {inner}
-          </LinearGradient>
-        </TouchableOpacity>
-      </Animated.View>
-    );
-  }
-
   return (
-    <Animated.View style={[{ transform: [{ scale }], opacity: isDisabled ? 0.5 : 1 }, style]}>
+    <Animated.View style={[{ transform: [{ scale }], opacity: isDisabled ? 0.45 : 1 }, style]}>
       <TouchableOpacity
         disabled={isDisabled}
         onPress={onPress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        activeOpacity={0.85}
+        activeOpacity={0.88}
         style={[
           styles.base,
           {
             backgroundColor: v.bg,
-            paddingVertical: s.paddingVertical,
-            paddingHorizontal: s.paddingHorizontal,
-            borderRadius: s.borderRadius,
-            borderWidth: 'border' in v && v.border ? 1.5 : 0,
-            borderColor: 'border' in v ? (v.border ?? 'transparent') : 'transparent',
+            borderColor: v.border,
+            borderWidth: variant === 'ghost' ? 0 : 1,
           },
         ]}
         {...props}
       >
-        {inner}
+        {/* Filete interno dourado — assinatura do primary */}
+        {v.inner ? (
+          <View
+            pointerEvents="none"
+            style={[styles.innerLine, { borderColor: v.inner }]}
+          />
+        ) : null}
+        <View style={{ paddingVertical: s.paddingVertical, paddingHorizontal: s.paddingHorizontal }}>
+          {inner}
+        </View>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -137,16 +114,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.md,
     overflow: 'hidden',
   },
-  gradient: {
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+  innerLine: {
+    position: 'absolute',
+    top: 2.5,
+    left: 2.5,
+    right: 2.5,
+    bottom: 2.5,
+    borderWidth: 1,
+    borderRadius: radius.sm,
+    opacity: 0.85,
   },
   text: {
-    fontWeight: '700',
-    letterSpacing: 0.8,
+    fontFamily: fontFamily.bodySemiBold,
+    letterSpacing: letterSpacing.caps,
   },
 });

@@ -8,7 +8,8 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppColors } from '../../theme/colors';
+import type { AppColors } from '../../theme/theme';
+import { fontFamily, radius } from '../../theme/theme';
 
 interface HeaderProps {
   title: string;
@@ -48,12 +49,13 @@ function createStyles(c: AppColors) {
     },
     title: {
       color: c.text,
-      fontSize: 17,
-      fontWeight: '700',
-      letterSpacing: 0.6,
+      fontFamily: fontFamily.headingBold,
+      fontSize: 19,
+      letterSpacing: 0.3,
     },
     subtitle: {
       color: c.textMuted,
+      fontFamily: fontFamily.bodyRegular,
       fontSize: 12,
       marginTop: 1,
     },
@@ -63,7 +65,7 @@ function createStyles(c: AppColors) {
     backCircle: {
       width: 38,
       height: 38,
-      borderRadius: 19,
+      borderRadius: radius.md,
       backgroundColor: c.bgCard,
       borderWidth: 1,
       borderColor: c.borderStrong,

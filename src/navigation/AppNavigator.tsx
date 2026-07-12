@@ -58,6 +58,8 @@ export function AppNavigator() {
       <Stack.Screen name="AdminBannerForm" component={AdminBannerFormScreen} />
       <Stack.Screen name="AdminStoreConfig" component={AdminStoreConfigScreen} />
       <Stack.Screen name="Pagamentos" component={PlaceholderScreen} />
+      <Stack.Screen name="Fidelidade" component={PlaceholderScreen} />
+      <Stack.Screen name="IndiqueAmigo" component={PlaceholderScreen} />
       <Stack.Screen name="Cupons" component={CouponsScreen} />
     </Stack.Navigator>
   );

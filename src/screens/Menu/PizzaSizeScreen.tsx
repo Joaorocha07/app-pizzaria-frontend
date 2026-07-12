@@ -13,13 +13,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppStackParamList } from '../../navigation/types';
 import { useTheme } from '../../contexts/ThemeContext';
-import { AppColors } from '../../theme/colors';
+import { AppColors } from '../../theme/theme';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 const { width: SW } = Dimensions.get('window');
 const CIRCLE_SIZE = SW * 0.58;
-const PRIMARY = '#C0392B';
-const ACCENT = '#B8860B';
-const BG = '#0A0A0A';
+const CREAM = '#F4EDE1';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
@@ -79,7 +78,7 @@ export function PizzaSizeScreen({ navigation, route }: Props) {
       {/* Header */}
       <View style={[s.header, { paddingTop: insets.top + 12 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={s.backBtn} activeOpacity={0.75}>
-          <Ionicons name="chevron-back" size={22} color="#F5F0E8" />
+          <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={s.headerText}>
           <Text style={s.categoryLabel}>{categoryName}</Text>
@@ -116,7 +115,7 @@ export function PizzaSizeScreen({ navigation, route }: Props) {
 
         {/* Tip */}
         <View style={s.tip}>
-          <Ionicons name="information-circle-outline" size={15} color={`${ACCENT}90`} />
+          <Ionicons name="information-circle-outline" size={15} color={colors.accent} />
           <Text style={s.tipText}>Todas as pizzas são meias a meias</Text>
         </View>
       </Animated.View>
@@ -128,22 +127,22 @@ function createStyles(c: AppColors) {
   return StyleSheet.create({
     root: { flex: 1, backgroundColor: c.bg },
     header: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 20, paddingBottom: 16, gap: 14 },
-    backBtn: { width: 40, height: 40, borderRadius: 20, backgroundColor: c.bgCard, alignItems: 'center', justifyContent: 'center' },
+    backBtn: { width: 40, height: 40, borderRadius: radius.md, backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' },
     headerText: { flex: 1 },
-    categoryLabel: { color: c.textSecondary, fontSize: 12, fontWeight: '600', marginBottom: 2 },
-    headerTitle: { color: c.text, fontSize: 22, fontWeight: '900' },
+    categoryLabel: { color: c.accent, fontFamily: fontFamily.bodySemiBold, fontSize: 10, letterSpacing: letterSpacing.caps, textTransform: 'uppercase', marginBottom: 2 },
+    headerTitle: { color: c.text, fontFamily: fontFamily.headingBold, fontSize: 22 },
     iconWrap: { alignItems: 'center', justifyContent: 'center', paddingVertical: 40 },
-    circleHint: { color: c.textSecondary, fontSize: 16, fontWeight: '700', textAlign: 'center' },
+    circleHint: { color: c.textSecondary, fontFamily: fontFamily.headingItalic, fontSize: 17, textAlign: 'center' },
     pillsSection: { flex: 1, paddingHorizontal: 20 },
-    pickLabel: { color: c.textSecondary, fontSize: 11, fontWeight: '700', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 16, textAlign: 'center' },
+    pickLabel: { color: c.textSecondary, fontFamily: fontFamily.bodySemiBold, fontSize: 10, letterSpacing: letterSpacing.capsWide, textTransform: 'uppercase', marginBottom: 16, textAlign: 'center' },
     pillsRow: { flexDirection: 'row', gap: 10, justifyContent: 'center' },
-    pill: { paddingHorizontal: 22, paddingVertical: 14, borderRadius: 22, backgroundColor: c.bgElevated, borderWidth: 1.5, borderColor: c.border, alignItems: 'center', minWidth: 96 },
-    pillActive: { backgroundColor: PRIMARY, borderColor: PRIMARY, shadowColor: PRIMARY, shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.55, shadowRadius: 10, elevation: 8 },
-    pillLabel: { color: c.textSecondary, fontSize: 15, fontWeight: '800', marginBottom: 3 },
-    pillLabelActive: { color: '#FFFFFF' },
-    pillDesc: { color: c.textMuted, fontSize: 10, fontWeight: '600', textAlign: 'center' },
-    pillDescActive: { color: 'rgba(255,255,255,0.75)' },
+    pill: { paddingHorizontal: 20, paddingVertical: 14, borderRadius: radius.md, backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border, alignItems: 'center', minWidth: 96 },
+    pillActive: { backgroundColor: c.primary, borderColor: c.accent },
+    pillLabel: { color: c.textSecondary, fontFamily: fontFamily.bodySemiBold, fontSize: 13, letterSpacing: letterSpacing.caps, textTransform: 'uppercase', marginBottom: 3 },
+    pillLabelActive: { color: CREAM },
+    pillDesc: { color: c.textMuted, fontFamily: fontFamily.bodyMedium, fontSize: 10, textAlign: 'center' },
+    pillDescActive: { color: 'rgba(244,237,225,0.8)' },
     tip: { flexDirection: 'row', alignItems: 'center', gap: 6, justifyContent: 'center', marginTop: 28 },
-    tipText: { color: `${ACCENT}80`, fontSize: 12, fontWeight: '600' },
+    tipText: { color: c.accent, fontFamily: fontFamily.headingItalic, fontSize: 13 },
   });
 }

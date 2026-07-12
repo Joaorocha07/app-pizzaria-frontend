@@ -16,7 +16,10 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 import { ErrorMessage } from '../../components/common/ErrorMessage';
+import { Button } from '../../components/common/Button';
+import { SectionHeading } from '../../components/common/SectionHeading';
 import { productService } from '../../services/productService';
 import { marketingService } from '../../services/marketingService';
 import { Produto, Categoria, Banner } from '../../types';
@@ -27,13 +30,12 @@ const { width: SW } = Dimensions.get('window');
 const H_PAD = 20;
 const BANNER_W = SW - H_PAD * 2;
 const BANNER_H = 168;
-const GRID_GAP = 12;
-const CARD_W = (SW - H_PAD * 2 - GRID_GAP) / 2;
 
-const PRIMARY = '#C0392B';
-const ACCENT = '#B8860B';
-const BG = '#0A0A0A';
-const CARD_BG = '#111111';
+/* Tons fixos usados apenas sobre foto/superfície primária (iguais nos 2 temas) */
+const PRIMARY = '#7E3B3B';
+const PRIMARY_DARK = '#5E2B2B';
+const ACCENT = '#B3924C';
+const CREAM = '#F4EDE1';
 
 type Props = { navigation: NativeStackNavigationProp<AppTabParamList> };
 
@@ -105,10 +107,14 @@ function HomeSkeleton() {
         <Skel w={55} h={12} r={6} />
       </View>
 
-      {/* grid */}
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: GRID_GAP, paddingHorizontal: H_PAD }}>
-        {[1, 2, 3, 4].map((i) => (
-          <Skel key={i} w={CARD_W} h={230} r={20} />
+      {/* carrossel de círculos */}
+      <View style={{ flexDirection: 'row', gap: 18, paddingHorizontal: H_PAD, overflow: 'hidden' }}>
+        {[1, 2, 3].map((i) => (
+          <View key={i} style={{ width: 145, alignItems: 'center', gap: 10 }}>
+            <Skel w={130} h={130} r={65} />
+            <Skel w={90} h={12} r={6} />
+            <Skel w={56} h={10} r={5} />
+          </View>
         ))}
       </View>
     </ScrollView>
@@ -146,16 +152,16 @@ function OfertasBanner({
   if (!banners.length) {
     return (
       <Animated.View style={[bs.wrapper, { opacity: fade }]}>
-        <LinearGradient colors={[PRIMARY, '#7B1A12']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={bs.placeholder}>
+        <LinearGradient colors={[PRIMARY, PRIMARY_DARK]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={bs.placeholder}>
           <View style={bs.placeholderText}>
             <Text style={bs.placeholderEye}>Promoção do fim de semana</Text>
             <Text style={bs.placeholderTitle}>{'Pizzas\nEspeciais'}</Text>
             <Text style={bs.placeholderSub}>Até 30% de desconto</Text>
             <TouchableOpacity style={bs.placeholderBtn} activeOpacity={0.8}>
-              <Text style={bs.placeholderBtnText}>Ver agora</Text>
+              <Text style={bs.placeholderBtnText}>VER AGORA</Text>
             </TouchableOpacity>
           </View>
-          <Ionicons name="pizza-outline" size={72} color="rgba(255,255,255,0.15)" style={bs.placeholderEmoji} />
+          <Ionicons name="pizza-outline" size={72} color="rgba(245,237,224,0.15)" style={bs.placeholderEmoji} />
         </LinearGradient>
         <View style={bs.dots}>
           <View style={[bs.dot, bs.dotActive]} />
@@ -181,21 +187,7 @@ function OfertasBanner({
           setActive(Math.max(0, Math.min(idx, banners.length - 1)));
         }}
         renderItem={({ item }) => (
-          <TouchableOpacity onPress={() => onPress(item)} activeOpacity={0.9} style={[bs.item, { borderColor: colors.border }]}>
-            <Image source={{ uri: item.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-            <LinearGradient
-              colors={['rgba(192,57,43,0.65)', 'rgba(0,0,0,0.55)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
-            <View style={bs.itemContent}>
-              <Text style={bs.itemEye} numberOfLines={1}>{item.titulo}</Text>
-              <TouchableOpacity style={bs.itemBtn} activeOpacity={0.85}>
-                <Text style={bs.itemBtnText}>Ver agora</Text>
-              </TouchableOpacity>
-            </View>
-          </TouchableOpacity>
+          <BannerItem item={item} onPress={onPress} borderColor={colors.border} />
         )}
       />
 
@@ -213,21 +205,52 @@ function OfertasBanner({
   );
 }
 
+function BannerItem({ item, onPress, borderColor }: { item: Banner; onPress: (b: Banner) => void; borderColor: string }) {
+  const scale = useRef(new Animated.Value(1)).current;
+
+  function pressIn() {
+    Animated.spring(scale, { toValue: 0.97, useNativeDriver: true, speed: 60 }).start();
+  }
+  function pressOut() {
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
+  }
+
+  return (
+    <Animated.View style={{ transform: [{ scale }] }}>
+      <TouchableOpacity
+        onPress={() => onPress(item)}
+        onPressIn={pressIn}
+        onPressOut={pressOut}
+        activeOpacity={0.92}
+        style={[bs.item, { borderColor }]}
+      >
+        <Image source={{ uri: item.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+        <LinearGradient
+          colors={['rgba(107,30,35,0.65)', 'rgba(0,0,0,0.55)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={bs.itemContent}>
+          <Text style={bs.itemEye} numberOfLines={1}>{item.titulo}</Text>
+          <TouchableOpacity style={bs.itemBtn} activeOpacity={0.85}>
+            <Text style={bs.itemBtnText}>VER AGORA</Text>
+          </TouchableOpacity>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
+  );
+}
+
 const bs = StyleSheet.create({
   wrapper: { marginBottom: 8 },
   item: {
     width: BANNER_W,
     height: BANNER_H,
-    borderRadius: 22,
+    borderRadius: radius.lg,
     overflow: 'hidden',
     marginRight: 16,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.08)',
-    shadowColor: PRIMARY,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 10,
   },
   itemContent: {
     position: 'absolute',
@@ -235,52 +258,55 @@ const bs = StyleSheet.create({
     left: 20,
   },
   itemEye: {
-    color: 'rgba(255,255,255,0.85)',
-    fontSize: 13,
-    fontWeight: '600',
+    color: 'rgba(244,237,225,0.9)',
+    fontFamily: fontFamily.headingMedium,
+    fontSize: 15,
     marginBottom: 10,
   },
   itemBtn: {
     alignSelf: 'flex-start',
-    backgroundColor: '#000',
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
+    backgroundColor: 'rgba(26,20,15,0.5)',
+    borderWidth: 1,
+    borderColor: 'rgba(244,237,225,0.4)',
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: radius.sm,
   },
   itemBtnText: {
-    color: '#FFFFFF',
-    fontSize: 13,
-    fontWeight: '700',
+    color: CREAM,
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: letterSpacing.caps,
   },
   /* placeholder */
   placeholder: {
     marginHorizontal: H_PAD,
     height: BANNER_H,
-    borderRadius: 22,
+    borderRadius: radius.lg,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 24,
     overflow: 'hidden',
   },
   placeholderText: { flex: 1 },
-  placeholderEye: { color: 'rgba(255,255,255,0.7)', fontSize: 11, fontWeight: '600', marginBottom: 6 },
-  placeholderTitle: { color: '#FFFFFF', fontSize: 26, fontWeight: '900', lineHeight: 30, marginBottom: 8 },
-  placeholderSub: { color: 'rgba(255,255,255,0.8)', fontSize: 13, fontWeight: '600', marginBottom: 14 },
+  placeholderEye: { color: 'rgba(244,237,225,0.75)', fontFamily: fontFamily.bodySemiBold, fontSize: 9, letterSpacing: letterSpacing.caps, marginBottom: 6 },
+  placeholderTitle: { color: CREAM, fontFamily: fontFamily.headingBold, fontSize: 26, lineHeight: 30, marginBottom: 8 },
+  placeholderSub: { color: 'rgba(244,237,225,0.85)', fontFamily: fontFamily.headingItalic, fontSize: 14, marginBottom: 14 },
   placeholderBtn: {
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(26,20,15,0.35)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
-    paddingHorizontal: 18,
-    paddingVertical: 9,
-    borderRadius: 20,
+    borderColor: 'rgba(244,237,225,0.4)',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: radius.sm,
   },
-  placeholderBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '700' },
+  placeholderBtnText: { color: CREAM, fontFamily: fontFamily.bodySemiBold, fontSize: 10, letterSpacing: letterSpacing.caps },
   placeholderEmoji: { marginRight: -8 },
-  /* dots */
-  dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 6, marginTop: 14, marginBottom: 16 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.2)' },
-  dotActive: { width: 22, backgroundColor: PRIMARY, borderRadius: 3 },
+  /* dots — diamantes de impresso */
+  dots: { flexDirection: 'row', justifyContent: 'center', alignItems: 'center', gap: 8, marginTop: 14, marginBottom: 16 },
+  dot: { width: 5, height: 5, transform: [{ rotate: '45deg' }], backgroundColor: 'rgba(165,148,126,0.4)' },
+  dotActive: { backgroundColor: PRIMARY },
 });
 
 /* ─── CategoryPill ───────────────────────────────────────────── */
@@ -314,7 +340,7 @@ function CategoryPill({
         style={[cs.pill, active ? cs.pillActive : { backgroundColor: colors.bgElevated, borderColor: colors.border }]}
       >
         {icon ? <Text style={cs.pillIcon}>{icon}</Text> : null}
-        <Text style={[cs.pillLabel, active ? cs.pillLabelActive : { color: colors.textSecondary }]}>{label}</Text>
+        <Text style={[cs.pillLabel, active ? cs.pillLabelActive : { color: colors.textSecondary }]}>{label.toUpperCase()}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -324,27 +350,24 @@ const cs = StyleSheet.create({
   pill: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    height: 38,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.05)',
+    paddingHorizontal: 14,
+    height: 36,
+    borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     marginRight: 10,
     gap: 6,
   },
   pillActive: {
     backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
+    borderColor: ACCENT,
   },
-  pillIcon: { fontSize: 15 },
+  pillIcon: { fontSize: 14 },
   pillLabel: {
-    color: 'rgba(255,255,255,0.45)',
-    fontSize: 13,
-    fontWeight: '700',
-    letterSpacing: 0.2,
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: letterSpacing.caps,
   },
-  pillLabelActive: { color: '#FFFFFF' },
+  pillLabelActive: { color: CREAM },
 });
 
 /* ─── PopularCard ─────────────────────────────────────────────── */
@@ -371,61 +394,67 @@ function PopularCard({
   }, []);
 
   function btnIn() {
-    Animated.spring(btnScale, { toValue: 0.85, useNativeDriver: true, speed: 60 }).start();
+    Animated.spring(btnScale, { toValue: 0.9, useNativeDriver: true, speed: 60 }).start();
   }
   function btnOut() {
-    Animated.spring(btnScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 10 }).start();
+    Animated.spring(btnScale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 8 }).start();
   }
 
   return (
-    <Animated.View style={[ps.card, { width: CARD_W, opacity, transform: [{ translateY }], backgroundColor: colors.bgElevated, borderColor: colors.border }]}>
-      <TouchableOpacity onPress={onPress} activeOpacity={0.88} style={{ flex: 1 }}>
-        {/* Image */}
-        <View style={[ps.imgWrap, { backgroundColor: colors.bgInput }]}>
-          {produto.urlImagem && !imgErr ? (
-            <Image
-              source={{ uri: produto.urlImagem }}
-              style={StyleSheet.absoluteFill}
-              resizeMode="cover"
-              onError={() => setImgErr(true)}
-            />
-          ) : (
-            <LinearGradient
-              colors={['#1E1212', '#0D0D0D']}
-              style={[StyleSheet.absoluteFill, ps.imgFallback]}
-            />
-          )}
-          <LinearGradient
-            colors={['transparent', 'rgba(0,0,0,0.6)']}
-            style={ps.imgGradient}
-          />
-          {!produto.disponivel && (
-            <View style={ps.unavailBadge}>
-              <Text style={ps.unavailText}>Indisponível</Text>
-            </View>
-          )}
-        </View>
-
-        {/* Info */}
-        <View style={ps.info}>
-          <Text style={[ps.name, { color: colors.text }]} numberOfLines={2}>{produto.nome}</Text>
-
-          <View style={ps.footer}>
-            <Text style={ps.price}>{formatCurrency(produto.preco)}</Text>
-            {produto.disponivel && (
-              <Pressable
-                onPressIn={btnIn}
-                onPressOut={btnOut}
-                onPress={onPress}
-                hitSlop={8}
-              >
-                <Animated.View style={[ps.addBtn, { transform: [{ scale: btnScale }] }]}>
-                  <Ionicons name="add" size={20} color="#FFFFFF" />
-                </Animated.View>
-              </Pressable>
+    <Animated.View style={[ps.card, { opacity, transform: [{ translateY }] }]}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.88} style={ps.cardTouch}>
+        {/* Círculo com sombra profunda — sombra no wrapper (overflow:hidden cortaria) */}
+        <View style={ps.circleShadow}>
+          <View style={[ps.circle, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
+            {produto.urlImagem && !imgErr ? (
+              <Image
+                source={{ uri: produto.urlImagem }}
+                style={StyleSheet.absoluteFill}
+                resizeMode="cover"
+                onError={() => setImgErr(true)}
+              />
+            ) : (
+              <View style={[StyleSheet.absoluteFill, ps.imgFallback]}>
+                <Ionicons name="pizza-outline" size={44} color={colors.textMuted} />
+              </View>
+            )}
+            {!produto.disponivel && (
+              <View style={ps.unavailBadge}>
+                <Text style={ps.unavailText}>INDISPONÍVEL</Text>
+              </View>
             )}
           </View>
+
+          {/* Botão + sobreposto ao círculo */}
+          {produto.disponivel && (
+            <Pressable
+              onPressIn={btnIn}
+              onPressOut={btnOut}
+              onPress={onPress}
+              hitSlop={8}
+              style={ps.addBtnWrap}
+            >
+              <Animated.View
+                style={[
+                  ps.addBtn,
+                  {
+                    backgroundColor: colors.primary,
+                    borderColor: colors.bg,
+                    shadowColor: colors.primary,
+                    transform: [{ scale: btnScale }],
+                  },
+                ]}
+              >
+                <Ionicons name="add" size={22} color={CREAM} />
+              </Animated.View>
+            </Pressable>
+          )}
         </View>
+
+        {/* Info centralizada abaixo do círculo */}
+        <Text style={[ps.name, { color: colors.text }]} numberOfLines={1}>{produto.nome}</Text>
+        <View style={[ps.nameDivider, { backgroundColor: colors.accent }]} />
+        <Text style={[ps.price, { color: colors.accent }]}>{formatCurrency(produto.preco)}</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -433,91 +462,77 @@ function PopularCard({
 
 const ps = StyleSheet.create({
   card: {
-    height: 234,
-    borderRadius: 20,
-    backgroundColor: CARD_BG,
+    width: 145,
+    flexShrink: 0,
+  },
+  cardTouch: {
+    alignItems: 'center',
+  },
+  circleShadow: {
+    width: 130,
+    height: 130,
+    marginBottom: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.7,
+    shadowRadius: 16,
+    elevation: 16,
+  },
+  circle: {
+    width: 130,
+    height: 130,
+    borderRadius: 65,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 14,
-    elevation: 8,
-  },
-  imgWrap: {
-    height: 138,
-    backgroundColor: '#1A1A1A',
-    overflow: 'hidden',
   },
   imgFallback: {
-    flex: 1,
-  },
-  imgGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 50,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   unavailBadge: {
     position: 'absolute',
     inset: 0,
-    backgroundColor: 'rgba(0,0,0,0.62)',
+    backgroundColor: 'rgba(44,33,24,0.66)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  unavailText: { color: 'rgba(255,255,255,0.6)', fontSize: 11, fontWeight: '700' },
-  info: {
-    flex: 1,
-    paddingHorizontal: 10,
-    paddingTop: 8,
-    paddingBottom: 10,
-    justifyContent: 'space-between',
-  },
-  name: {
-    color: '#F5F0E8',
-    fontSize: 13,
-    fontWeight: '700',
-    lineHeight: 17,
-  },
-  footer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  price: {
-    color: ACCENT,
-    fontSize: 15,
-    fontWeight: '900',
+  unavailText: { color: CREAM, fontFamily: fontFamily.bodySemiBold, fontSize: 9, letterSpacing: letterSpacing.caps },
+  addBtnWrap: {
+    position: 'absolute',
+    bottom: 4,
+    right: 4,
   },
   addBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: PRIMARY,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
+    borderWidth: 2.5,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: PRIMARY,
     shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.55,
-    shadowRadius: 6,
-    elevation: 5,
+    shadowOpacity: 0.6,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  name: {
+    fontFamily: fontFamily.bodyMedium,
+    fontSize: 14,
+    textAlign: 'center',
+    maxWidth: 140,
+  },
+  nameDivider: {
+    width: 24,
+    height: 1,
+    opacity: 0.5,
+    marginVertical: 4,
+    alignSelf: 'center',
+  },
+  price: {
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 13,
+    textAlign: 'center',
   },
 });
-
-/* ─── SectionRow ─────────────────────────────────────────────── */
-function SectionRow({ title, onViewAll }: { title: string; onViewAll: () => void }) {
-  const { colors } = useTheme();
-  return (
-    <View style={ss.sectionRow}>
-      <Text style={[ss.sectionTitle, { color: colors.text }]}>{title}</Text>
-      <TouchableOpacity onPress={onViewAll} activeOpacity={0.75}>
-        <Text style={ss.seeAll}>Ver tudo</Text>
-      </TouchableOpacity>
-    </View>
-  );
-}
 
 /* ─── HomeScreen ─────────────────────────────────────────────── */
 export function HomeScreen({ navigation }: Props) {
@@ -599,21 +614,25 @@ export function HomeScreen({ navigation }: Props) {
         <Ionicons name="search-outline" size={18} color={colors.textMuted} />
         <Text style={[ss.searchPlaceholder, { color: colors.textMuted }]}>Buscar prato, restaurante...</Text>
         <View style={ss.filterBtn}>
-          <Ionicons name="options-outline" size={17} color="#FFFFFF" />
+          <Ionicons name="options-outline" size={16} color={CREAM} />
         </View>
       </TouchableOpacity>
 
       {/* ── 2. Ofertas Exclusivas ── */}
-      <SectionRow
-        title="Ofertas Exclusivas"
-        onViewAll={() => (navigation as any).navigate('Cardapio')}
+      <SectionHeading
+        title="Ofertas da Casa"
+        actionLabel="Ver tudo"
+        onAction={() => (navigation as any).navigate('Cardapio')}
+        style={ss.sectionHeading}
       />
       <OfertasBanner banners={banners} onPress={() => {}} />
 
       {/* ── 3. Explorar Categorias ── */}
-      <SectionRow
-        title="Explorar Categorias"
-        onViewAll={() => (navigation as any).navigate('Cardapio')}
+      <SectionHeading
+        title="Categorias"
+        actionLabel="Ver tudo"
+        onAction={() => (navigation as any).navigate('Cardapio')}
+        style={ss.sectionHeading}
       />
       <ScrollView
         horizontal
@@ -644,18 +663,38 @@ export function HomeScreen({ navigation }: Props) {
       </ScrollView>
 
       {/* ── 4. Pratos Populares ── */}
-      <SectionRow
+      <SectionHeading
         title="Pratos Populares"
-        onViewAll={() => (navigation as any).navigate('Cardapio')}
+        actionLabel="Ver tudo"
+        onAction={() => (navigation as any).navigate('Cardapio')}
+        style={ss.sectionHeading}
       />
 
       {produtos.length === 0 ? (
         <View style={ss.empty}>
           <Ionicons name="restaurant-outline" size={52} color={colors.textMuted} />
           <Text style={[ss.emptyText, { color: colors.textMuted }]}>Nenhum produto encontrado</Text>
+          <Button
+            title={selectedCategory ? 'Ver todas as categorias' : 'Ver cardápio completo'}
+            variant="outline"
+            size="sm"
+            onPress={() => {
+              if (selectedCategory) {
+                setSelectedCategory(null);
+                productService.getProducts({ disponivel: true }).then(setProdutos).catch(() => {});
+              } else {
+                (navigation as any).navigate('Cardapio');
+              }
+            }}
+            style={{ marginTop: 4 }}
+          />
         </View>
       ) : (
-        <View style={ss.grid}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={ss.carousel}
+        >
           {produtos.map((produto, i) => {
             const cat = categorias.find((c) => c.id === produto.categoriaId);
             return (
@@ -677,7 +716,7 @@ export function HomeScreen({ navigation }: Props) {
               />
             );
           })}
-        </View>
+        </ScrollView>
       )}
 
       <View style={{ height: 24 }} />
@@ -687,7 +726,7 @@ export function HomeScreen({ navigation }: Props) {
 
 /* ─── Shared styles ──────────────────────────────────────────── */
 const ss = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1 },
 
   /* search */
   searchBar: {
@@ -695,28 +734,32 @@ const ss = StyleSheet.create({
     alignItems: 'center',
     marginHorizontal: H_PAD,
     marginBottom: 28,
-    paddingHorizontal: 18,
-    paddingVertical: 14,
-    borderRadius: 16,
-    backgroundColor: '#1A1A1A',
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+    borderRadius: radius.md,
     gap: 12,
   },
   searchPlaceholder: {
     flex: 1,
-    color: 'rgba(255,255,255,0.28)',
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 14,
-    fontWeight: '500',
   },
   filterBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 10,
+    width: 32,
+    height: 32,
+    borderRadius: radius.sm,
     backgroundColor: PRIMARY,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  /* section row */
+  /* section heading */
+  sectionHeading: {
+    paddingHorizontal: H_PAD,
+    marginBottom: 14,
+  },
+
+  /* section row (usado apenas pelo skeleton) */
   sectionRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -724,24 +767,12 @@ const ss = StyleSheet.create({
     paddingHorizontal: H_PAD,
     marginBottom: 14,
   },
-  sectionTitle: {
-    color: '#F5F0E8',
-    fontSize: 17,
-    fontWeight: '800',
-    letterSpacing: 0.2,
-  },
-  seeAll: {
-    color: PRIMARY,
-    fontSize: 13,
-    fontWeight: '700',
-  },
 
-  /* grid */
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: GRID_GAP,
+  /* carrossel de pratos populares */
+  carousel: {
     paddingHorizontal: H_PAD,
+    gap: 18,
+    paddingBottom: 16,
   },
 
   /* empty */
@@ -751,7 +782,7 @@ const ss = StyleSheet.create({
     gap: 10,
   },
   emptyText: {
-    color: 'rgba(255,255,255,0.22)',
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 14,
     letterSpacing: 0.3,
   },

@@ -18,20 +18,25 @@ import { productService } from '../../services/productService';
 import { Categoria } from '../../types';
 import { AppTabParamList } from '../../navigation/types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
+import { ErrorMessage } from '../../components/common/ErrorMessage';
+import { Ornament } from '../../components/common/Ornament';
 
 const { width: SW } = Dimensions.get('window');
 const H_PAD = 16;
 const CARD_GAP = 12;
 const FULL_W = SW - H_PAD * 2;
 const HALF_W = (SW - H_PAD * 2 - CARD_GAP) / 2;
-const PRIMARY = '#C0392B';
-const ACCENT = '#B8860B';
-const BG = '#0A0A0A';
+/* Tons fixos usados apenas sobre foto (iguais nos 2 temas) */
+const PRIMARY = '#7E3B3B';
+const ACCENT = '#B3924C';
+const CREAM = '#F4EDE1';
 
 type Props = { navigation: NativeStackNavigationProp<AppTabParamList> };
 
 /* ─── Skeleton ──────────────────────────────────────── */
-function Skel({ w, h, r = 14 }: { w: number; h: number; r?: number }) {
+function Skel({ w, h, r = 10 }: { w: number; h: number; r?: number }) {
+  const { colors } = useTheme();
   const pulse = useRef(new Animated.Value(0.3)).current;
   useEffect(() => {
     Animated.loop(
@@ -41,7 +46,7 @@ function Skel({ w, h, r = 14 }: { w: number; h: number; r?: number }) {
       ]),
     ).start();
   }, []);
-  return <Animated.View style={{ width: w, height: h, borderRadius: r, backgroundColor: '#1C1C1C', opacity: pulse }} />;
+  return <Animated.View style={{ width: w, height: h, borderRadius: r, backgroundColor: colors.bgInput, opacity: pulse }} />;
 }
 
 /* ─── CategoryCard ──────────────────────────────────── */
@@ -81,34 +86,31 @@ function CategoryCard({ categoria, width, height, delay, onPress }: CardProps) {
         activeOpacity={1}
         style={[cs.card, { width, height }]}
       >
-        {/* Background image or gradient fallback */}
+        {/* Background image or fallback */}
         {categoria.urlImagem ? (
           <Image source={{ uri: categoria.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
-          <LinearGradient
-            colors={['#2A1A1A', '#0D0D0D']}
-            style={[StyleSheet.absoluteFill, cs.fallbackGradient]}
-          >
-            <Ionicons name="restaurant-outline" size={Math.round(height * 0.3)} color="rgba(192,57,43,0.22)" />
-          </LinearGradient>
+          <View style={[StyleSheet.absoluteFill, cs.fallbackGradient, { backgroundColor: '#3A2C20' }]}>
+            <Ionicons name="restaurant-outline" size={Math.round(height * 0.3)} color="rgba(244,237,225,0.18)" />
+          </View>
         )}
 
         {/* Bottom gradient overlay */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.82)']}
+          colors={['transparent', 'rgba(26,20,15,0.85)']}
           style={cs.overlay}
         />
 
         {/* Content */}
         <View style={cs.content}>
           <View style={cs.pill}>
-            <Text style={cs.pillText}>Ver sabores</Text>
-            <Ionicons name="chevron-forward" size={11} color={PRIMARY} />
+            <Text style={cs.pillText}>VER SABORES</Text>
+            <Ionicons name="chevron-forward" size={10} color={CREAM} />
           </View>
           <Text style={cs.name} numberOfLines={2}>{categoria.nome}</Text>
         </View>
 
-        {/* Red accent line */}
+        {/* Filete dourado inferior — assinatura de rótulo */}
         <View style={cs.accentLine} />
       </TouchableOpacity>
     </Animated.View>
@@ -121,16 +123,10 @@ const cs = StyleSheet.create({
     justifyContent: 'center',
   },
   card: {
-    borderRadius: 22,
+    borderRadius: radius.lg,
     overflow: 'hidden',
-    backgroundColor: '#111',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.5,
-    shadowRadius: 14,
-    elevation: 8,
+    borderColor: 'rgba(179,146,76,0.35)',
     justifyContent: 'flex-end',
   },
   overlay: {
@@ -144,36 +140,34 @@ const cs = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     alignSelf: 'flex-start',
-    backgroundColor: 'rgba(192,57,43,0.15)',
+    backgroundColor: 'rgba(26,20,15,0.45)',
     borderWidth: 1,
-    borderColor: `${PRIMARY}40`,
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    borderColor: 'rgba(244,237,225,0.35)',
+    borderRadius: radius.sm,
+    paddingHorizontal: 9,
     paddingVertical: 4,
     gap: 4,
   },
   pillText: {
-    color: PRIMARY,
-    fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 0.3,
+    color: CREAM,
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 9,
+    letterSpacing: letterSpacing.caps,
   },
   name: {
-    color: '#F5F0E8',
-    fontSize: 18,
-    fontWeight: '900',
-    letterSpacing: 0.2,
-    lineHeight: 22,
+    color: CREAM,
+    fontFamily: fontFamily.headingBold,
+    fontSize: 19,
+    letterSpacing: 0.1,
+    lineHeight: 23,
   },
   accentLine: {
     position: 'absolute',
     left: 0,
-    top: 0,
+    right: 0,
     bottom: 0,
-    width: 4,
-    backgroundColor: PRIMARY,
-    borderTopLeftRadius: 22,
-    borderBottomLeftRadius: 22,
+    height: 3,
+    backgroundColor: ACCENT,
   },
 });
 
@@ -184,13 +178,16 @@ export function MenuScreen({ navigation }: Props) {
   const [categorias, setCategorias] = useState<Categoria[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function load() {
     try {
+      setError(null);
       const cats = await productService.getCategories();
       setCategorias(cats.filter((c) => c.ativo));
-    } catch {}
-    finally {
+    } catch (e: any) {
+      setError(e.message ?? 'Não foi possível carregar o cardápio');
+    } finally {
       setLoading(false);
       setRefreshing(false);
     }
@@ -217,6 +214,14 @@ export function MenuScreen({ navigation }: Props) {
   const mainCats = categorias.slice(0, 2);
   const gridCats = categorias.slice(2);
 
+  if (!loading && error) {
+    return (
+      <View style={[ms.root, { backgroundColor: colors.bg, paddingTop: pt }]}>
+        <ErrorMessage message={error} onRetry={load} />
+      </View>
+    );
+  }
+
   return (
     <View style={[ms.root, { backgroundColor: colors.bg }]}>
       <ScrollView
@@ -231,10 +236,11 @@ export function MenuScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 32 }}
       >
-        {/* Header */}
+        {/* Header — capa de cardápio antigo */}
         <View style={[ms.header, { paddingTop: pt }]}>
           <Text style={[ms.title, { color: colors.text }]}>Cardápio</Text>
           <Text style={[ms.subtitle, { color: colors.textSecondary }]}>Escolha sua categoria</Text>
+          <Ornament style={ms.headerOrnament} color={colors.accent} />
         </View>
 
         {loading ? (
@@ -299,22 +305,27 @@ export function MenuScreen({ navigation }: Props) {
 }
 
 const ms = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1 },
   header: {
     paddingHorizontal: H_PAD,
-    paddingBottom: 20,
+    paddingBottom: 18,
+    alignItems: 'center',
   },
   title: {
-    color: '#F5F0E8',
+    fontFamily: fontFamily.headingBold,
     fontSize: 30,
-    fontWeight: '900',
-    letterSpacing: 0.2,
+    letterSpacing: 0.1,
     marginBottom: 2,
   },
   subtitle: {
-    color: 'rgba(255,255,255,0.3)',
-    fontSize: 13,
-    fontWeight: '500',
+    fontFamily: fontFamily.headingItalic,
+    fontSize: 14,
+    marginTop: 2,
+  },
+  headerOrnament: {
+    marginTop: 12,
+    width: 170,
+    alignSelf: 'center',
   },
   empty: {
     alignItems: 'center',
@@ -322,7 +333,7 @@ const ms = StyleSheet.create({
     gap: 12,
   },
   emptyText: {
-    color: 'rgba(255,255,255,0.2)',
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 14,
   },
   dividerRow: {
@@ -333,13 +344,11 @@ const ms = StyleSheet.create({
   },
   dividerLine: {
     flex: 1,
-    height: 1,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    height: StyleSheet.hairlineWidth * 2,
   },
   dividerLabel: {
-    color: 'rgba(255,255,255,0.2)',
+    fontFamily: fontFamily.bodySemiBold,
     fontSize: 10,
-    fontWeight: '700',
-    letterSpacing: 1.5,
+    letterSpacing: letterSpacing.capsWide,
   },
 });

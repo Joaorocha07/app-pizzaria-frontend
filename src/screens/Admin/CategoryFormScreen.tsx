@@ -194,8 +194,8 @@ export function AdminCategoryFormScreen({ navigation, route }: Props) {
           <Switch
             value={ativo}
             onValueChange={setAtivo}
-            trackColor={{ false: '#374151', true: '#7F1212' }}
-            thumbColor={ativo ? '#E63946' : '#6B7280'}
+            trackColor={{ false: '#374151', true: '#611212' }}
+            thumbColor={ativo ? '#8B1A1A' : '#6B7280'}
           />
         </View>
         <Button
@@ -216,11 +216,11 @@ const cf = StyleSheet.create({
     height: 180,
     borderRadius: 22,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#221D19',
     marginBottom: 20,
     borderWidth: 1,
     borderStyle: 'dashed',
-    borderColor: '#2A2A2A',
+    borderColor: '#3A2E22',
   },
   imgPreview: { width: '100%', height: '100%' },
   imgDarkOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: 'rgba(0,0,0,0.25)' },
@@ -229,7 +229,7 @@ const cf = StyleSheet.create({
   imgPlaceholderSub: { fontSize: 11 },
   imgOverlay: {
     position: 'absolute', bottom: 10, right: 10,
-    backgroundColor: '#C0392B', borderRadius: 14,
+    backgroundColor: '#8B1A1A', borderRadius: 14,
     width: 32, height: 32, alignItems: 'center', justifyContent: 'center',
   },
   uploadingOverlay: {

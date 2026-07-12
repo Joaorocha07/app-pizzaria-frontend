@@ -8,35 +8,26 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { adminService } from '../../services/adminService';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { AppColors } from '../../theme/theme';
 import { Pedido, StatusPedido } from '../../types';
 import { formatCurrency, formatOrderId } from '../../utils/helpers';
-
-// ─── Tokens ──────────────────────────────────────────────
-const BG     = '#0F0D0C';
-const CARD   = '#161210';
-const BORDER = '#242020';
-const TEXT   = '#F5F5F5';
-const TEXT2  = '#666666';
-const RED    = '#C0392B';
-const GOLD   = '#B8860B';
-const AMBER  = '#F39C12';
-const BLUE   = '#2980B9';
-const GREEN  = '#27AE60';
-const GOLD_BORDER = 'rgba(184,134,11,0.2)';
 
 // Escala de espaçamento única — evita valores "no olho" espalhados pela tela.
 const SPACING = { xs: 4, sm: 8, md: 12, lg: 16, xl: 20, xxl: 24 };
 
 type IoniconName = React.ComponentProps<typeof Ionicons>['name'];
 
-// ─── Status config ───────────────────────────────────────
-const STATUS_COLOR: Record<StatusPedido, string> = {
-  PENDENTE:   AMBER,
-  PREPARANDO: RED,
-  ENTREGANDO: BLUE,
-  ENTREGUE:   GREEN,
-  CANCELADO:  '#555555',
-};
+// ─── Status config (derivado dos tokens do tema — reage a dark/light) ────
+function getStatusColor(c: AppColors): Record<StatusPedido, string> {
+  return {
+    PENDENTE:   c.warning,
+    PREPARANDO: c.primary,
+    ENTREGANDO: c.info,
+    ENTREGUE:   c.success,
+    CANCELADO:  c.textMuted,
+  };
+}
 
 const STATUS_LABEL: Record<StatusPedido, string> = {
   PENDENTE:   'Pendente',
@@ -64,22 +55,26 @@ const METODO_ICON: Record<string, IoniconName> = {
   PIX: 'qr-code-outline', CARTAO: 'card-outline', DINHEIRO: 'cash-outline',
 };
 
-const FILTERS: { label: string; value: StatusPedido | null; icon: IoniconName; color: string }[] = [
-  { label: 'Todos',    value: null,         icon: 'apps-outline',           color: GOLD  },
-  { label: 'Novos',   value: 'PENDENTE',   icon: 'time-outline',           color: AMBER },
-  { label: 'Cozinha', value: 'PREPARANDO', icon: 'flame-outline',          color: RED   },
-  { label: 'Entrega', value: 'ENTREGANDO', icon: 'bicycle-outline',        color: BLUE  },
-  { label: 'Prontos', value: 'ENTREGUE',   icon: 'checkmark-done-outline', color: GREEN },
-  { label: 'Cancel.', value: 'CANCELADO',  icon: 'close-circle-outline',   color: '#555555' },
-];
+function getFilters(c: AppColors): { label: string; value: StatusPedido | null; icon: IoniconName; color: string }[] {
+  return [
+    { label: 'Todos',    value: null,         icon: 'apps-outline',           color: c.accent  },
+    { label: 'Novos',   value: 'PENDENTE',   icon: 'time-outline',           color: c.warning },
+    { label: 'Cozinha', value: 'PREPARANDO', icon: 'flame-outline',          color: c.primary },
+    { label: 'Entrega', value: 'ENTREGANDO', icon: 'bicycle-outline',        color: c.info    },
+    { label: 'Prontos', value: 'ENTREGUE',   icon: 'checkmark-done-outline', color: c.success },
+    { label: 'Cancel.', value: 'CANCELADO',  icon: 'close-circle-outline',   color: c.textMuted },
+  ];
+}
 
 // "Situação dos pedidos" — único painel-resumo da tela (4 mini cards)
-const SITUACAO_STATS: { label: string; status: StatusPedido; icon: IoniconName; color: string }[] = [
-  { label: 'Pendentes',   status: 'PENDENTE',   icon: 'time-outline',           color: AMBER },
-  { label: 'Confirmados', status: 'PREPARANDO', icon: 'flame-outline',          color: RED   },
-  { label: 'Em entrega',  status: 'ENTREGANDO', icon: 'bicycle-outline',        color: BLUE  },
-  { label: 'Concluídos',  status: 'ENTREGUE',   icon: 'checkmark-done-outline', color: GREEN },
-];
+function getSituacaoStats(c: AppColors): { label: string; status: StatusPedido; icon: IoniconName; color: string }[] {
+  return [
+    { label: 'Pendentes',   status: 'PENDENTE',   icon: 'time-outline',           color: c.warning },
+    { label: 'Confirmados', status: 'PREPARANDO', icon: 'flame-outline',          color: c.primary },
+    { label: 'Em entrega',  status: 'ENTREGANDO', icon: 'bicycle-outline',        color: c.info    },
+    { label: 'Concluídos',  status: 'ENTREGUE',   icon: 'checkmark-done-outline', color: c.success },
+  ];
+}
 
 // ─── Helpers ─────────────────────────────────────────────
 function elapsed(criadoEm: string): string {
@@ -102,6 +97,7 @@ function capitalizeParts(str: string): string {
 
 // ─── Skel (shimmer) ───────────────────────────────────────
 function Skel({ w, h, r = 8, style }: { w: number | string; h: number; r?: number; style?: object }) {
+  const { colors } = useTheme();
   const op = useRef(new Animated.Value(0.4)).current;
   useEffect(() => {
     Animated.loop(Animated.sequence([
@@ -109,7 +105,7 @@ function Skel({ w, h, r = 8, style }: { w: number | string; h: number; r?: numbe
       Animated.timing(op, { toValue: 0.4, duration: 700, useNativeDriver: true }),
     ])).start();
   }, []);
-  return <Animated.View style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: '#1D1815', opacity: op }, style]} />;
+  return <Animated.View style={[{ width: w as any, height: h, borderRadius: r, backgroundColor: colors.bgCard, opacity: op }, style]} />;
 }
 
 // ─── useCountUp (inteiro) ──────────────────────────────────
@@ -161,9 +157,11 @@ function PressableScale({ onPress, style, children }: { onPress?: () => void; st
 
 // ─── VariationBadge ────────────────────────────────────────
 function VariationBadge({ value, isPercent, compareLabel }: { value: number; isPercent?: boolean; compareLabel?: string }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const positive = value > 0;
   const neutral  = value === 0;
-  const color = neutral ? TEXT2 : positive ? GREEN : RED;
+  const color = neutral ? colors.textSecondary : positive ? colors.success : colors.primary;
   const icon: IoniconName = neutral ? 'remove-outline' : positive ? 'arrow-up' : 'arrow-down';
   const sign = positive ? '+' : '';
   return (
@@ -178,6 +176,8 @@ function VariationBadge({ value, isPercent, compareLabel }: { value: number; isP
 
 // ─── OrderCard ───────────────────────────────────────────
 function OrderCard({ pedido, onPress }: { pedido: Pedido; onPress: () => void }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const scale   = useRef(new Animated.Value(1)).current;
   const slideY  = useRef(new Animated.Value(-16)).current;
   const opacity = useRef(new Animated.Value(0)).current;
@@ -189,7 +189,7 @@ function OrderCard({ pedido, onPress }: { pedido: Pedido; onPress: () => void })
     ]).start();
   }, []);
 
-  const color     = STATUS_COLOR[pedido.status];
+  const color     = getStatusColor(colors)[pedido.status];
   const hasNext   = Boolean(NEXT_STATUS[pedido.status]?.length);
   const actionLbl = NEXT_ACTION_LABEL[pedido.status];
 
@@ -212,16 +212,16 @@ function OrderCard({ pedido, onPress }: { pedido: Pedido; onPress: () => void })
 
         {/* Linha 2: horário + pagamento */}
         <View style={s.cardRow2}>
-          <Ionicons name="time-outline" size={12} color={TEXT2} />
+          <Ionicons name="time-outline" size={12} color={colors.textSecondary} />
           <Text style={s.cardMeta} numberOfLines={1}>{elapsed(pedido.criadoEm)}</Text>
           <Text style={s.cardMetaDot}>·</Text>
-          <Ionicons name={METODO_ICON[pedido.metodoPagamento] ?? 'cash-outline'} size={12} color={TEXT2} />
+          <Ionicons name={METODO_ICON[pedido.metodoPagamento] ?? 'cash-outline'} size={12} color={colors.textSecondary} />
           <Text style={s.cardMeta} numberOfLines={1}>{pedido.metodoPagamento}</Text>
           {pedido.cupomId && (
             <>
               <Text style={s.cardMetaDot}>·</Text>
-              <Ionicons name="pricetag-outline" size={12} color={GOLD} />
-              <Text style={[s.cardMeta, { color: GOLD }]} numberOfLines={1}>Cupom</Text>
+              <Ionicons name="pricetag-outline" size={12} color={colors.accent} />
+              <Text style={[s.cardMeta, { color: colors.accent }]} numberOfLines={1}>Cupom</Text>
             </>
           )}
         </View>
@@ -233,7 +233,7 @@ function OrderCard({ pedido, onPress }: { pedido: Pedido; onPress: () => void })
         {hasNext && actionLbl && (
           <View style={[s.actionBtn, { backgroundColor: color }]}>
             <Text style={s.actionBtnText} numberOfLines={1}>{actionLbl}</Text>
-            <Ionicons name="arrow-forward" size={14} color="#FFFFFF" />
+            <Ionicons name="arrow-forward" size={14} color="#F5F0E8" />
           </View>
         )}
       </Pressable>
@@ -243,11 +243,13 @@ function OrderCard({ pedido, onPress }: { pedido: Pedido; onPress: () => void })
 
 // ─── DashboardSkeleton ─────────────────────────────────────
 function DashboardSkeleton() {
+  const { colors } = useTheme();
+  const s = useMemo(() => createStyles(colors), [colors]);
   return (
     <View style={{ paddingHorizontal: SPACING.lg, gap: SPACING.xl, paddingTop: SPACING.xs }}>
       {/* 2 cards lado a lado */}
       <View style={s.dashRow}>
-        <View style={[s.dashCard, s.dashCardLeft, { borderColor: BORDER }]}>
+        <View style={[s.dashCard, s.dashCardLeft, { borderColor: colors.border }]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
             <Skel w={70} h={44} r={8} />
             <Skel w={56} h={30} r={6} />
@@ -255,7 +257,7 @@ function DashboardSkeleton() {
           <Skel w={130} h={11} r={5} style={{ marginTop: SPACING.md }} />
           <Skel w={90} h={20} r={10} style={{ marginTop: SPACING.sm }} />
         </View>
-        <View style={[s.dashCard, s.dashCardRight, { borderColor: BORDER }]}>
+        <View style={[s.dashCard, s.dashCardRight, { borderColor: colors.border }]}>
           <Skel w={18} h={18} r={9} />
           <Skel w={90} h={10} r={5} style={{ marginTop: SPACING.sm }} />
           <Skel w={110} h={22} r={6} style={{ marginTop: SPACING.xs }} />
@@ -281,7 +283,7 @@ function DashboardSkeleton() {
 
       {/* Pedidos */}
       {[1, 2, 3].map(i => (
-        <View key={i} style={[s.card, { borderLeftColor: BORDER, padding: SPACING.lg, gap: SPACING.md }]}>
+        <View key={i} style={[s.card, { borderLeftColor: colors.border, padding: SPACING.lg, gap: SPACING.md }]}>
           <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Skel w={110} h={16} r={6} />
             <Skel w={80}  h={24} r={12} />
@@ -300,6 +302,10 @@ function DashboardSkeleton() {
 export function AdminOrdersManagementScreen() {
   const insets = useSafeAreaInsets();
   const { usuario } = useAuth();
+  const { colors } = useTheme();
+  const s = useMemo(() => createStyles(colors), [colors]);
+  const FILTERS = useMemo(() => getFilters(colors), [colors]);
+  const SITUACAO_STATS = useMemo(() => getSituacaoStats(colors), [colors]);
   const [pedidos,         setPedidos]         = useState<Pedido[]>([]);
   const [filteredPedidos, setFilteredPedidos] = useState<Pedido[]>([]);
   const [statusFilter,    setStatusFilter]    = useState<StatusPedido | null>(null);
@@ -429,7 +435,7 @@ export function AdminOrdersManagementScreen() {
         style={s.notifBtn}
         activeOpacity={0.75}
       >
-        <Ionicons name="notifications-outline" size={24} color={TEXT} />
+        <Ionicons name="notifications-outline" size={24} color={colors.text} />
         {pendingCount > 0 && (
           <View style={s.notifBadge}>
             <Text style={s.notifBadgeText} numberOfLines={1}>{pendingCount > 9 ? '9+' : pendingCount}</Text>
@@ -444,14 +450,14 @@ export function AdminOrdersManagementScreen() {
     <>
       {/* 2 cards lado a lado */}
       <View style={s.dashRow}>
-        <LinearGradient colors={['#1A1614', '#0F0D0C']} style={[s.dashCard, s.dashCardLeft]}>
+        <LinearGradient colors={[colors.bgCard, colors.bg]} style={[s.dashCard, s.dashCardLeft]}>
           <Text style={s.bigNumber} numberOfLines={1} adjustsFontSizeToFit>{activeDisplay}</Text>
           <Text style={s.bigLabel} numberOfLines={1}>Atendimentos ativos</Text>
           <VariationBadge value={ordersVariation} compareLabel="vs ontem" />
         </LinearGradient>
 
-        <LinearGradient colors={['#1A1614', '#0F0D0C']} style={[s.dashCard, s.dashCardRight]}>
-          <Ionicons name="cash-outline" size={18} color={GOLD} />
+        <LinearGradient colors={[colors.bgCard, colors.bg]} style={[s.dashCard, s.dashCardRight]}>
+          <Ionicons name="cash-outline" size={18} color={colors.accent} />
           <Text style={s.smallLabel} numberOfLines={1}>RECEITA DO DIA</Text>
           <Text style={s.revenueValue} numberOfLines={1} adjustsFontSizeToFit>{formatCurrency(revenueDisplay)}</Text>
           <VariationBadge value={revenueVariationPct} isPercent />
@@ -499,9 +505,9 @@ export function AdminOrdersManagementScreen() {
               activeOpacity={0.78}
               style={[s.chip, active && s.chipActive]}
             >
-              <Ionicons name={f.icon} size={13} color={active ? RED : TEXT2} />
-              <Text style={[s.chipLabel, active && { color: TEXT }]} numberOfLines={1}>{f.label}</Text>
-              <Text style={[s.chipCount, active && { color: RED }]} numberOfLines={1}>{count}</Text>
+              <Ionicons name={f.icon} size={13} color={active ? colors.primary : colors.textSecondary} />
+              <Text style={[s.chipLabel, active && { color: colors.text }]} numberOfLines={1}>{f.label}</Text>
+              <Text style={[s.chipCount, active && { color: colors.primary }]} numberOfLines={1}>{count}</Text>
             </TouchableOpacity>
           );
         })}
@@ -530,7 +536,7 @@ export function AdminOrdersManagementScreen() {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor={RED}
+            tintColor={colors.primary}
           />
         }
         contentContainerStyle={s.listContent}
@@ -538,7 +544,7 @@ export function AdminOrdersManagementScreen() {
         ListEmptyComponent={
           <View style={s.emptyState}>
             <View style={s.emptyIconWrap}>
-              <Ionicons name="receipt-outline" size={40} color={TEXT2} />
+              <Ionicons name="receipt-outline" size={40} color={colors.textSecondary} />
             </View>
             <Text style={s.emptyTitle}>Nenhum pedido por aqui</Text>
             <Text style={s.emptyText}>Assim que um cliente pedir, ele aparece aqui na hora</Text>
@@ -553,123 +559,125 @@ export function AdminOrdersManagementScreen() {
   );
 }
 
-// ─── Styles ──────────────────────────────────────────────
-const s = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+// ─── Styles (dependem do tema — nenhuma cor hardcoded) ────
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    root: { flex: 1, backgroundColor: c.bg },
 
-  /* Header */
-  header: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xl,
-  },
-  greeting:   { color: TEXT, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
-  headerDate: { color: TEXT2, fontSize: 12, fontWeight: '500', marginTop: 4 },
-  notifBtn: {
-    width: 44, height: 44,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  notifBadge: {
-    position: 'absolute', top: 2, right: 2,
-    minWidth: 16, height: 16, borderRadius: 8, flexShrink: 0,
-    backgroundColor: RED, alignItems: 'center', justifyContent: 'center',
-    paddingHorizontal: 3, borderWidth: 1.5, borderColor: BG,
-  },
-  notifBadgeText: { color: '#FFFFFF', fontSize: 9, fontWeight: '800' },
+    /* Header */
+    header: {
+      flexDirection: 'row', alignItems: 'center',
+      paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xl,
+    },
+    greeting:   { color: c.text, fontSize: 26, fontWeight: '800', letterSpacing: -0.5 },
+    headerDate: { color: c.textSecondary, fontSize: 12, fontWeight: '500', marginTop: 4 },
+    notifBtn: {
+      width: 44, height: 44,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    notifBadge: {
+      position: 'absolute', top: 2, right: 2,
+      minWidth: 16, height: 16, borderRadius: 8, flexShrink: 0,
+      backgroundColor: c.primary, alignItems: 'center', justifyContent: 'center',
+      paddingHorizontal: 3, borderWidth: 1.5, borderColor: c.bg,
+    },
+    notifBadgeText: { color: '#F5F0E8', fontSize: 9, fontWeight: '800' },
 
-  /* List */
-  listContent: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
+    /* List */
+    listContent: { paddingHorizontal: SPACING.lg, paddingBottom: SPACING.xxl },
 
-  /* Dashboard: 2 cards lado a lado */
-  dashRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.xl },
-  dashCard: {
-    borderRadius: 20, padding: SPACING.xxl, borderWidth: 1, borderColor: GOLD_BORDER,
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 14, elevation: 8,
-  },
-  dashCardLeft:  { flex: 1, minHeight: 132 },
-  dashCardRight: { flex: 1, minHeight: 132 },
+    /* Dashboard: 2 cards lado a lado */
+    dashRow: { flexDirection: 'row', gap: SPACING.md, marginBottom: SPACING.xl },
+    dashCard: {
+      borderRadius: 20, padding: SPACING.xxl, borderWidth: 1, borderColor: `${c.accent}33`,
+      shadowColor: '#000', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.3, shadowRadius: 14, elevation: 8,
+    },
+    dashCardLeft:  { flex: 1, minHeight: 132 },
+    dashCardRight: { flex: 1, minHeight: 132 },
 
-  bigNumber: { flexShrink: 1, color: TEXT, fontSize: 40, fontWeight: '900', letterSpacing: -1.5, lineHeight: 42 },
-  bigLabel:  { color: TEXT2, fontSize: 12, fontWeight: '600', marginTop: SPACING.sm },
+    bigNumber: { flexShrink: 1, color: c.text, fontSize: 40, fontWeight: '900', letterSpacing: -1.5, lineHeight: 42 },
+    bigLabel:  { color: c.textSecondary, fontSize: 12, fontWeight: '600', marginTop: SPACING.sm },
 
-  smallLabel:   { color: TEXT2, fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginTop: SPACING.sm },
-  revenueValue: { color: TEXT, fontSize: 22, fontWeight: '900', letterSpacing: -0.5, marginTop: SPACING.xs },
+    smallLabel:   { color: c.textSecondary, fontSize: 10, fontWeight: '700', letterSpacing: 0.8, marginTop: SPACING.sm },
+    revenueValue: { color: c.text, fontSize: 22, fontWeight: '900', letterSpacing: -0.5, marginTop: SPACING.xs },
 
-  varBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0,
-    alignSelf: 'flex-start', marginTop: SPACING.sm,
-    paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, borderWidth: 1,
-  },
-  varBadgeText: { fontSize: 11, fontWeight: '800' },
+    varBadge: {
+      flexDirection: 'row', alignItems: 'center', gap: 4, flexShrink: 0,
+      alignSelf: 'flex-start', marginTop: SPACING.sm,
+      paddingHorizontal: 8, paddingVertical: 3, borderRadius: 10, borderWidth: 1,
+    },
+    varBadgeText: { fontSize: 11, fontWeight: '800' },
 
-  /* Situação dos pedidos — dashboard de 4 mini cards */
-  situacaoCard: {
-    backgroundColor: CARD, borderRadius: 20, padding: SPACING.xl,
-    borderWidth: 1, borderColor: BORDER, marginBottom: SPACING.xl,
-  },
-  situacaoHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.lg },
-  situacaoTitle:  { color: TEXT, fontSize: 16, fontWeight: '800', flexShrink: 1 },
+    /* Situação dos pedidos — dashboard de 4 mini cards */
+    situacaoCard: {
+      backgroundColor: c.bgCard, borderRadius: 20, padding: SPACING.xl,
+      borderWidth: 1, borderColor: c.border, marginBottom: SPACING.xl,
+    },
+    situacaoHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.lg },
+    situacaoTitle:  { color: c.text, fontSize: 16, fontWeight: '800', flexShrink: 1 },
 
-  miniGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md },
-  miniCard: {
-    width: '47%', flexGrow: 1,
-    flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
-    borderRadius: 14, borderWidth: 1,
-    paddingVertical: SPACING.sm, paddingHorizontal: SPACING.md,
-  },
-  miniIconBox: {
-    width: 38, height: 38, borderRadius: 10, flexShrink: 0,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  miniTextCol: { flex: 1 },
-  miniNumber: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
-  miniLabel:  { color: TEXT2, fontSize: 11, fontWeight: '600', marginTop: 2 },
+    miniGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: SPACING.md },
+    miniCard: {
+      width: '47%', flexGrow: 1,
+      flexDirection: 'row', alignItems: 'center', gap: SPACING.sm,
+      borderRadius: 14, borderWidth: 1,
+      paddingVertical: SPACING.sm, paddingHorizontal: SPACING.md,
+    },
+    miniIconBox: {
+      width: 38, height: 38, borderRadius: 10, flexShrink: 0,
+      alignItems: 'center', justifyContent: 'center',
+    },
+    miniTextCol: { flex: 1 },
+    miniNumber: { fontSize: 20, fontWeight: '900', letterSpacing: -0.5 },
+    miniLabel:  { color: c.textSecondary, fontSize: 11, fontWeight: '600', marginTop: 2 },
 
-  /* Filter chips */
-  filtersRow: { gap: SPACING.xs, paddingVertical: 2, paddingRight: SPACING.lg },
-  chip: {
-    flexDirection: 'row', alignItems: 'center', gap: 5,
-    paddingHorizontal: SPACING.sm, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: CARD, borderWidth: 1, borderColor: BORDER,
-  },
-  chipActive: { borderColor: RED, backgroundColor: 'rgba(192,57,43,0.12)' },
-  chipLabel: { color: TEXT2, fontSize: 12, fontWeight: '700' },
-  chipCount: { color: TEXT2, fontSize: 11, fontWeight: '700', opacity: 0.7 },
+    /* Filter chips */
+    filtersRow: { gap: SPACING.xs, paddingVertical: 2, paddingRight: SPACING.lg },
+    chip: {
+      flexDirection: 'row', alignItems: 'center', gap: 5,
+      paddingHorizontal: SPACING.sm, paddingVertical: 7, borderRadius: 20,
+      backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border,
+    },
+    chipActive: { borderColor: c.primary, backgroundColor: `${c.primary}1F` },
+    chipLabel: { color: c.textSecondary, fontSize: 12, fontWeight: '700' },
+    chipCount: { color: c.textSecondary, fontSize: 11, fontWeight: '700', opacity: 0.7 },
 
-  /* Order card */
-  card: {
-    backgroundColor: CARD, borderRadius: 16,
-    borderWidth: 1, borderColor: BORDER,
-    borderLeftWidth: 3, overflow: 'hidden',
-  },
-  cardRow1: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.sm },
-  cardId:   { color: TEXT, fontSize: 16, fontWeight: '800', flexShrink: 1, marginRight: SPACING.sm },
-  statusBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0,
-    paddingHorizontal: 10, paddingVertical: 4,
-    borderRadius: 20, borderWidth: 1,
-  },
-  statusDot:  { width: 6, height: 6, borderRadius: 3 },
-  statusText: { fontSize: 11, fontWeight: '700' },
+    /* Order card */
+    card: {
+      backgroundColor: c.bgCard, borderRadius: 16,
+      borderWidth: 1, borderColor: c.border,
+      borderLeftWidth: 3, overflow: 'hidden',
+    },
+    cardRow1: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: SPACING.sm },
+    cardId:   { color: c.text, fontSize: 16, fontWeight: '800', flexShrink: 1, marginRight: SPACING.sm },
+    statusBadge: {
+      flexDirection: 'row', alignItems: 'center', gap: 5, flexShrink: 0,
+      paddingHorizontal: 10, paddingVertical: 4,
+      borderRadius: 20, borderWidth: 1,
+    },
+    statusDot:  { width: 6, height: 6, borderRadius: 3 },
+    statusText: { fontSize: 11, fontWeight: '700' },
 
-  cardRow2: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: SPACING.md },
-  cardMeta: { color: TEXT2, fontSize: 12, fontWeight: '500' },
-  cardMetaDot: { color: TEXT2, fontSize: 12 },
+    cardRow2: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: SPACING.md },
+    cardMeta: { color: c.textSecondary, fontSize: 12, fontWeight: '500' },
+    cardMetaDot: { color: c.textSecondary, fontSize: 12 },
 
-  cardTotal: { color: GOLD, fontSize: 18, fontWeight: '900' },
+    cardTotal: { color: c.accent, fontSize: 18, fontWeight: '900' },
 
-  actionBtn: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, marginTop: SPACING.md, paddingVertical: 11, borderRadius: 12,
-  },
-  actionBtnText: { color: '#FFFFFF', fontSize: 13, fontWeight: '800' },
+    actionBtn: {
+      flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+      gap: 8, marginTop: SPACING.md, paddingVertical: 11, borderRadius: 12,
+    },
+    actionBtnText: { color: '#F5F0E8', fontSize: 13, fontWeight: '800' },
 
-  /* Empty state */
-  emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 96, paddingHorizontal: SPACING.xxl, gap: SPACING.md },
-  emptyIconWrap: {
-    width: 88, height: 88, borderRadius: 44,
-    backgroundColor: CARD, borderWidth: 1, borderColor: BORDER,
-    alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.xs,
-  },
-  emptyTitle: { color: TEXT, fontSize: 18, fontWeight: '800', textAlign: 'center' },
-  emptyText:  { color: TEXT2, fontSize: 14, textAlign: 'center', lineHeight: 20 },
-});
+    /* Empty state */
+    emptyState: { alignItems: 'center', justifyContent: 'center', paddingTop: 96, paddingHorizontal: SPACING.xxl, gap: SPACING.md },
+    emptyIconWrap: {
+      width: 88, height: 88, borderRadius: 44,
+      backgroundColor: c.bgCard, borderWidth: 1, borderColor: c.border,
+      alignItems: 'center', justifyContent: 'center', marginBottom: SPACING.xs,
+    },
+    emptyTitle: { color: c.text, fontSize: 18, fontWeight: '800', textAlign: 'center' },
+    emptyText:  { color: c.textSecondary, fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  });
+}

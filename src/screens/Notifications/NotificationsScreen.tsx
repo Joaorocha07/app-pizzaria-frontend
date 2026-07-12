@@ -8,12 +8,14 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { Header } from '../../components/common/Header';
 import { formatDateTime } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList, 'Notificacoes'>;
 };
 
 export function NotificationsScreen({ navigation }: Props) {
+  const { colors } = useTheme();
   const [notificacoes, setNotificacoes] = useState<Notificacao[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -46,26 +48,26 @@ export function NotificationsScreen({ navigation }: Props) {
   if (loading) return <LoadingSpinner fullScreen />;
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title="Notificações" onBack={() => navigation.goBack()} />
 
       <FlatList
         data={notificacoes}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#E63946" />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />
         }
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         ListEmptyComponent={
           <View className="items-center py-16">
-            <Ionicons name="notifications-off-outline" size={64} color="#6B7280" />
+            <Ionicons name="notifications-off-outline" size={64} color={colors.textMuted} />
             <Text className="text-offwhite text-base font-bold mt-4">Nenhuma notificação</Text>
           </View>
         }
         renderItem={({ item }) => (
           <TouchableOpacity
             onPress={() => !item.lida && handleMarkRead(item.id)}
-            className={`rounded-2xl p-4 mb-3 ${item.lida ? 'bg-dark-card' : 'bg-dark-card border border-primary'}`}
+            className={`rounded-md p-4 mb-3 ${item.lida ? 'bg-dark-card' : 'bg-dark-card border border-primary'}`}
             activeOpacity={item.lida ? 1 : 0.8}
           >
             <View className="flex-row items-start gap-3">

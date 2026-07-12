@@ -10,6 +10,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 interface InputProps extends TextInputProps {
   label?: string;
@@ -45,16 +46,23 @@ export function Input({
 
   const borderColor = borderAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [error ? '#E63946' : '#2A2A2A', '#E63946'],
+    outputRange: [error ? colors.danger : colors.border, colors.primary],
   });
 
-  const iconColor = isFocused ? '#E63946' : '#666666';
+  const iconColor = isFocused ? colors.primary : colors.textMuted;
 
   return (
     <View style={styles.wrapper}>
       {label ? (
-        <Text style={[styles.label, { color: colors.textSecondary }, isFocused && styles.labelFocused, error ? styles.labelError : null]}>
-          {label}
+        <Text
+          style={[
+            styles.label,
+            { color: colors.textSecondary },
+            isFocused && { color: colors.primary },
+            error ? { color: colors.danger } : null,
+          ]}
+        >
+          {label.toUpperCase()}
         </Text>
       ) : null}
 
@@ -62,8 +70,7 @@ export function Input({
         style={[
           styles.container,
           { borderColor, backgroundColor: colors.bgInput },
-          isFocused && styles.containerFocused,
-          error ? styles.containerError : null,
+          error ? { borderColor: colors.danger } : null,
         ]}
       >
         {leftIcon ? (
@@ -106,7 +113,7 @@ export function Input({
         ) : null}
       </Animated.View>
 
-      {error ? <Text style={styles.error}>{error}</Text> : null}
+      {error ? <Text style={[styles.error, { color: colors.danger }]}>{error}</Text> : null}
     </View>
   );
 }
@@ -116,36 +123,18 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   label: {
-    color: '#A0A0A0',
-    fontSize: 13,
-    fontWeight: '600',
+    fontFamily: fontFamily.bodySemiBold,
+    fontSize: 10,
+    letterSpacing: letterSpacing.caps,
     marginBottom: 8,
   },
-  labelFocused: {
-    color: '#E63946',
-  },
-  labelError: {
-    color: '#E63946',
-  },
   container: {
-    height: 54,
-    backgroundColor: '#1A1A1A',
-    borderRadius: 14,
-    borderWidth: 1.5,
+    height: 52,
+    borderRadius: radius.md,
+    borderWidth: 1,
     flexDirection: 'row',
     alignItems: 'center',
     paddingHorizontal: 14,
-  },
-  containerFocused: {
-    backgroundColor: '#1E1E1E',
-    shadowColor: '#E63946',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 0,
-  },
-  containerError: {
-    borderColor: '#E63946',
   },
   iconLeft: {
     marginRight: 10,
@@ -153,7 +142,7 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    color: '#FFFFFF',
+    fontFamily: fontFamily.bodyRegular,
     fontSize: 15,
     height: '100%',
   },
@@ -166,7 +155,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   error: {
-    color: '#E63946',
     fontSize: 12,
     marginTop: 5,
     marginLeft: 2,

@@ -8,7 +8,8 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useCart } from '../../contexts/CartContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { AppStackParamList } from '../../navigation/types';
-import type { AppColors } from '../../theme/colors';
+import type { AppColors } from '../../theme/theme';
+import { fontFamily } from '../../theme/theme';
 
 type Nav = NativeStackNavigationProp<AppStackParamList>;
 
@@ -33,20 +34,20 @@ function createStyles(c: AppColors, topInset: number) {
       width: 44,
       height: 44,
       borderRadius: 22,
-      backgroundColor: '#C0392B',
+      backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      borderWidth: 2,
-      borderColor: 'rgba(192,57,43,0.3)',
+      borderWidth: 1.5,
+      borderColor: c.accent,
     },
     avatarInitial: {
-      color: '#FFFFFF',
-      fontSize: 18,
-      fontWeight: '800',
+      color: '#F4EDE1',
+      fontFamily: fontFamily.displayBold,
+      fontSize: 17,
     },
     locationLabel: {
+      fontFamily: fontFamily.bodyMedium,
       fontSize: 11,
-      fontWeight: '500',
       marginBottom: 2,
       color: c.textSecondary,
     },
@@ -55,8 +56,8 @@ function createStyles(c: AppColors, topInset: number) {
       alignItems: 'center',
     },
     locationCity: {
+      fontFamily: fontFamily.bodyBold,
       fontSize: 14,
-      fontWeight: '700',
       maxWidth: 150,
       color: c.text,
     },
@@ -68,7 +69,7 @@ function createStyles(c: AppColors, topInset: number) {
     iconBtn: {
       width: 44,
       height: 44,
-      borderRadius: 22,
+      borderRadius: 8,
       backgroundColor: c.bgCard,
       borderWidth: 1,
       borderColor: c.border,
@@ -77,12 +78,12 @@ function createStyles(c: AppColors, topInset: number) {
     },
     cartBadge: {
       position: 'absolute',
-      top: 6,
-      right: 6,
+      top: 5,
+      right: 5,
       minWidth: 16,
       height: 16,
-      borderRadius: 8,
-      backgroundColor: '#C0392B',
+      borderRadius: 4,
+      backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: 3,
@@ -90,9 +91,9 @@ function createStyles(c: AppColors, topInset: number) {
       borderColor: c.bg,
     },
     cartBadgeText: {
-      color: '#FFFFFF',
+      color: '#F4EDE1',
+      fontFamily: fontFamily.bodyBold,
       fontSize: 9,
-      fontWeight: '800',
     },
     notifDot: {
       position: 'absolute',
@@ -101,7 +102,7 @@ function createStyles(c: AppColors, topInset: number) {
       width: 8,
       height: 8,
       borderRadius: 4,
-      backgroundColor: '#C0392B',
+      backgroundColor: c.primary,
       borderWidth: 1.5,
       borderColor: c.bg,
     },

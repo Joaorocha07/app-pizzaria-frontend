@@ -43,4 +43,6 @@ export type AppStackParamList = {
   AdminStoreConfig: undefined;
   Pagamentos: undefined;
   Cupons: undefined;
+  Fidelidade: undefined;
+  IndiqueAmigo: undefined;
 };

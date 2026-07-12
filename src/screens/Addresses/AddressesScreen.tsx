@@ -64,7 +64,7 @@ export function AddressesScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AddressForm', {})}
             style={{ width: 44, alignItems: 'flex-end' }}
           >
-            <Ionicons name="add-circle-outline" size={26} color="#E63946" />
+            <Ionicons name="add-circle-outline" size={26} color={colors.primary} />
           </TouchableOpacity>
         }
       />
@@ -73,7 +73,7 @@ export function AddressesScreen({ navigation }: Props) {
         data={enderecos}
         keyExtractor={(item) => String(item.id)}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor="#E63946" />
+          <RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={colors.primary} />
         }
         contentContainerStyle={{ padding: 16, paddingBottom: 32 }}
         ListEmptyComponent={
@@ -84,7 +84,7 @@ export function AddressesScreen({ navigation }: Props) {
           </View>
         }
         renderItem={({ item }) => (
-          <View className="rounded-2xl p-4 mb-3" style={{ backgroundColor: colors.bgElevated }}>
+          <View className="rounded-md p-4 mb-3" style={{ backgroundColor: colors.bgElevated }}>
             <View className="flex-row items-start justify-between">
               <View className="flex-1">
                 <Text className="font-semibold" style={{ color: colors.text }}>
@@ -104,14 +104,14 @@ export function AddressesScreen({ navigation }: Props) {
               <View className="gap-2 ml-2">
                 <TouchableOpacity
                   onPress={() => navigation.navigate('AddressForm', { address: item })}
-                  className="rounded-lg px-3 py-1"
+                  className="rounded px-3 py-1"
                   style={{ backgroundColor: colors.bgInput }}
                 >
                   <Text className="text-xs" style={{ color: colors.text }}>Editar</Text>
                 </TouchableOpacity>
                 <TouchableOpacity
                   onPress={() => handleDelete(item.id)}
-                  className="bg-red-900/30 rounded-lg px-3 py-1"
+                  className="bg-red-900/30 rounded px-3 py-1"
                 >
                   <Text className="text-danger text-xs">Remover</Text>
                 </TouchableOpacity>

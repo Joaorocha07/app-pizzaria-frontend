@@ -20,6 +20,7 @@ import { Button } from '../../components/common/Button';
 import { Input } from '../../components/common/Input';
 import { Header } from '../../components/common/Header';
 import { AppStackParamList } from '../../navigation/types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList, 'AddressForm'>;
@@ -27,6 +28,7 @@ type Props = {
 };
 
 export function AddressFormScreen({ navigation, route }: Props) {
+  const { colors } = useTheme();
   const existing = route.params?.address;
   const [rua, setRua] = useState(existing?.rua ?? '');
   const [numero, setNumero] = useState(existing?.numero ?? '');
@@ -113,7 +115,7 @@ export function AddressFormScreen({ navigation, route }: Props) {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      style={{ flex: 1, backgroundColor: '#0D0D0D' }}
+      style={{ flex: 1, backgroundColor: colors.bg }}
     >
       <Header
         title={existing ? 'Editar endereço' : 'Novo endereço'}
@@ -123,35 +125,35 @@ export function AddressFormScreen({ navigation, route }: Props) {
       <ScrollView style={{ flex: 1, paddingHorizontal: 16 }} keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
 
         {/* CEP */}
-        <Text style={{ color: '#F5F0E8', fontSize: 14, fontWeight: '600', marginBottom: 6 }}>CEP</Text>
+        <Text style={{ color: colors.text, fontSize: 14, fontWeight: '600', marginBottom: 6 }}>CEP</Text>
         <View style={{
           flexDirection: 'row',
           alignItems: 'center',
-          backgroundColor: '#1A1A1A',
+          backgroundColor: colors.bgInput,
           borderWidth: 1,
-          borderColor: cepError ? '#EF4444' : cepOk ? '#22C55E' : '#2A2A2A',
-          borderRadius: 12,
+          borderColor: cepError ? colors.danger : cepOk ? colors.success : colors.border,
+          borderRadius: 6,
           paddingHorizontal: 14,
           marginBottom: 4,
         }}>
-          <Ionicons name="location-outline" size={18} color="#6B7280" style={{ marginRight: 8 }} />
+          <Ionicons name="location-outline" size={18} color={colors.textMuted} style={{ marginRight: 8 }} />
           <TextInput
-            style={{ flex: 1, color: '#F5F0E8', fontSize: 15, paddingVertical: 14 }}
+            style={{ flex: 1, color: colors.text, fontSize: 15, paddingVertical: 14 }}
             placeholder="00000-000"
-            placeholderTextColor="#6B7280"
+            placeholderTextColor={colors.textMuted}
             keyboardType="numeric"
             value={cep}
             onChangeText={handleCepChange}
             maxLength={9}
           />
-          {cepLoading && <ActivityIndicator size="small" color="#E63946" />}
-          {!cepLoading && cepOk && <Ionicons name="checkmark-circle" size={20} color="#22C55E" />}
-          {!cepLoading && !!cepError && <Ionicons name="close-circle" size={20} color="#EF4444" />}
+          {cepLoading && <ActivityIndicator size="small" color={colors.primary} />}
+          {!cepLoading && cepOk && <Ionicons name="checkmark-circle" size={20} color={colors.success} />}
+          {!cepLoading && !!cepError && <Ionicons name="close-circle" size={20} color={colors.danger} />}
         </View>
         {cepError ? (
-          <Text style={{ color: '#EF4444', fontSize: 12, marginBottom: 14 }}>{cepError}</Text>
+          <Text style={{ color: colors.danger, fontSize: 12, marginBottom: 14 }}>{cepError}</Text>
         ) : (
-          <Text style={{ color: '#6B7280', fontSize: 12, marginBottom: 14 }}>
+          <Text style={{ color: colors.textMuted, fontSize: 12, marginBottom: 14 }}>
             Preenche os campos automaticamente
           </Text>
         )}
@@ -220,23 +222,23 @@ export function AddressFormScreen({ navigation, route }: Props) {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
-          backgroundColor: '#1A1A1A',
+          backgroundColor: colors.bgInput,
           borderWidth: 1,
-          borderColor: '#2A2A2A',
-          borderRadius: 12,
+          borderColor: colors.border,
+          borderRadius: 6,
           paddingHorizontal: 16,
           paddingVertical: 14,
           marginBottom: 24,
         }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-            <Ionicons name="star-outline" size={18} color="#F4A261" />
-            <Text style={{ color: '#F5F0E8', fontWeight: '600' }}>Endereço padrão</Text>
+            <Ionicons name="star-outline" size={18} color={colors.accent} />
+            <Text style={{ color: colors.text, fontWeight: '600' }}>Endereço padrão</Text>
           </View>
           <Switch
             value={padrao}
             onValueChange={setPadrao}
-            trackColor={{ true: '#E63946', false: '#2A2A2A' }}
-            thumbColor={padrao ? '#F5F0E8' : '#6B7280'}
+            trackColor={{ true: colors.primaryDark, false: colors.border }}
+            thumbColor={padrao ? colors.primary : colors.textMuted}
           />
         </View>
 

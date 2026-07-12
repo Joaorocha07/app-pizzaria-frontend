@@ -4,7 +4,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Produto } from '../../types';
 import { formatCurrency } from '../../utils/helpers';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppColors } from '../../theme/colors';
+import type { AppColors } from '../../theme/theme';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 interface ProductCardProps {
   produto: Produto;
@@ -14,36 +15,38 @@ interface ProductCardProps {
 
 function createStyles(c: AppColors) {
   return StyleSheet.create({
+    /* Moldura dupla de impresso: filete externo + filete interno com respiro */
     card: {
       backgroundColor: c.bgCard,
-      borderRadius: 20,
-      overflow: 'hidden',
-      marginBottom: 14,
-      flexDirection: 'row',
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.18,
-      shadowRadius: 12,
-      elevation: 4,
+      borderRadius: radius.md,
       borderWidth: 1,
       borderColor: c.border,
+      padding: 3,
+      marginBottom: 14,
+    },
+    cardInner: {
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: radius.sm,
+      overflow: 'hidden',
+      flexDirection: 'row',
     },
     cardUnavailable: {
       opacity: 0.5,
     },
     imageWrapper: {
-      width: 118,
-      height: 118,
+      width: 112,
+      height: 112,
       position: 'relative',
     },
     image: {
-      width: 118,
-      height: 118,
+      width: 112,
+      height: 112,
     },
     imagePlaceholder: {
-      width: 118,
-      height: 118,
-      backgroundColor: c.bgCard,
+      width: 112,
+      height: 112,
+      backgroundColor: c.bgInput,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -52,15 +55,15 @@ function createStyles(c: AppColors) {
       bottom: 0,
       left: 0,
       right: 0,
-      backgroundColor: 'rgba(0,0,0,0.7)',
+      backgroundColor: 'rgba(44,33,24,0.75)',
       paddingVertical: 4,
       alignItems: 'center',
     },
     unavailableText: {
-      color: '#9CA3AF',
-      fontSize: 10,
-      fontWeight: '700',
-      letterSpacing: 0.5,
+      color: '#F4EDE1',
+      fontFamily: fontFamily.bodySemiBold,
+      fontSize: 9,
+      letterSpacing: letterSpacing.caps,
     },
     info: {
       flex: 1,
@@ -70,22 +73,23 @@ function createStyles(c: AppColors) {
     infoTop: {},
     categoryLabel: {
       color: c.accent,
+      fontFamily: fontFamily.bodySemiBold,
       fontSize: 9,
-      fontWeight: '700',
-      letterSpacing: 1.4,
+      letterSpacing: letterSpacing.capsWide,
       textTransform: 'uppercase',
       marginBottom: 3,
     },
     nome: {
       color: c.text,
-      fontSize: 15,
-      fontWeight: '700',
-      lineHeight: 20,
-      letterSpacing: 0.2,
+      fontFamily: fontFamily.headingMedium,
+      fontSize: 16,
+      lineHeight: 21,
+      letterSpacing: 0.1,
       marginBottom: 4,
     },
     descricao: {
       color: c.textMuted,
+      fontFamily: fontFamily.bodyRegular,
       fontSize: 12,
       lineHeight: 16,
     },
@@ -97,26 +101,22 @@ function createStyles(c: AppColors) {
     },
     precoLabel: {
       color: c.textMuted,
+      fontFamily: fontFamily.bodyRegular,
       fontSize: 10,
       marginBottom: 1,
     },
     preco: {
       color: c.accent,
+      fontFamily: fontFamily.headingBold,
       fontSize: 17,
-      fontWeight: '800',
     },
     addBtn: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: '#C0392B',
+      width: 34,
+      height: 34,
+      borderRadius: radius.sm,
+      backgroundColor: c.primary,
       alignItems: 'center',
       justifyContent: 'center',
-      shadowColor: '#C0392B',
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.5,
-      shadowRadius: 8,
-      elevation: 6,
     },
   });
 }
@@ -165,44 +165,46 @@ export function ProductCard({ produto, onPress, animationDelay = 0 }: ProductCar
         style={[styles.card, !produto.disponivel && styles.cardUnavailable]}
         activeOpacity={1}
       >
-        <View style={styles.imageWrapper}>
-          {produto.urlImagem ? (
-            <Image source={{ uri: produto.urlImagem }} style={styles.image} resizeMode="cover" />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Ionicons name="pizza-outline" size={40} color={colors.textMuted} />
-            </View>
-          )}
-          {!produto.disponivel && (
-            <View style={styles.unavailableBadge}>
-              <Text style={styles.unavailableText}>Indisponível</Text>
-            </View>
-          )}
-        </View>
-
-        <View style={styles.info}>
-          <View style={styles.infoTop}>
-            {produto.categoria && (
-              <Text style={styles.categoryLabel} numberOfLines={1}>
-                {produto.categoria.nome}
-              </Text>
+        <View style={styles.cardInner}>
+          <View style={styles.imageWrapper}>
+            {produto.urlImagem ? (
+              <Image source={{ uri: produto.urlImagem }} style={styles.image} resizeMode="cover" />
+            ) : (
+              <View style={styles.imagePlaceholder}>
+                <Ionicons name="pizza-outline" size={40} color={colors.textMuted} />
+              </View>
             )}
-            <Text style={styles.nome} numberOfLines={2}>{produto.nome}</Text>
-            {produto.descricao && (
-              <Text style={styles.descricao} numberOfLines={2}>{produto.descricao}</Text>
+            {!produto.disponivel && (
+              <View style={styles.unavailableBadge}>
+                <Text style={styles.unavailableText}>INDISPONÍVEL</Text>
+              </View>
             )}
           </View>
 
-          <View style={styles.infoBottom}>
-            <View>
-              <Text style={styles.precoLabel}>a partir de</Text>
-              <Text style={styles.preco}>{formatCurrency(produto.preco)}</Text>
+          <View style={styles.info}>
+            <View style={styles.infoTop}>
+              {produto.categoria && (
+                <Text style={styles.categoryLabel} numberOfLines={1}>
+                  {produto.categoria.nome}
+                </Text>
+              )}
+              <Text style={styles.nome} numberOfLines={2}>{produto.nome}</Text>
+              {produto.descricao && (
+                <Text style={styles.descricao} numberOfLines={2}>{produto.descricao}</Text>
+              )}
             </View>
-            {produto.disponivel && (
-              <View style={styles.addBtn}>
-                <Ionicons name="add" size={22} color="#FFFFFF" />
+
+            <View style={styles.infoBottom}>
+              <View>
+                <Text style={styles.precoLabel}>a partir de</Text>
+                <Text style={styles.preco}>{formatCurrency(produto.preco)}</Text>
               </View>
-            )}
+              {produto.disponivel && (
+                <View style={styles.addBtn}>
+                  <Ionicons name="add" size={22} color="#F4EDE1" />
+                </View>
+              )}
+            </View>
           </View>
         </View>
       </TouchableOpacity>

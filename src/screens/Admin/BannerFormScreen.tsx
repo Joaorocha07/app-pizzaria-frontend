@@ -104,8 +104,8 @@ export function AdminBannerFormScreen({ navigation, route }: Props) {
           <Switch
             value={ativo}
             onValueChange={setAtivo}
-            trackColor={{ false: '#374151', true: '#7F1212' }}
-            thumbColor={ativo ? '#E63946' : '#6B7280'}
+            trackColor={{ false: '#374151', true: '#611212' }}
+            thumbColor={ativo ? '#8B1A1A' : '#6B7280'}
           />
         </View>
         <Button

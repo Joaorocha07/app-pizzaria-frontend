@@ -1,7 +1,8 @@
 import React, { useMemo } from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../../contexts/ThemeContext';
-import type { AppColors } from '../../theme/colors';
+import type { AppColors } from '../../theme/theme';
+import { fontFamily } from '../../theme/theme';
 
 interface LoadingSpinnerProps {
   message?: string;
@@ -22,6 +23,7 @@ function createStyles(c: AppColors) {
     message: {
       color: c.textSecondary,
       marginTop: 12,
+      fontFamily: fontFamily.bodyRegular,
       fontSize: 14,
       letterSpacing: 0.3,
     },

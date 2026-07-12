@@ -8,6 +8,7 @@ import {
   Animated,
   Dimensions,
   Image,
+  ActivityIndicator,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
@@ -19,14 +20,17 @@ import { Produto } from '../../types';
 import { formatCurrency } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
+import { ErrorMessage } from '../../components/common/ErrorMessage';
 
 const { width: SW } = Dimensions.get('window');
 const CIRCLE = SW * 0.52;
 const H_CIRCLE = CIRCLE / 2;
-const PRIMARY = '#C0392B';
-const ACCENT = '#B8860B';
-const BG = '#0A0A0A';
-const CARD_BG = '#111111';
+/* Tons fixos usados apenas sobre foto/prato (iguais nos 2 temas) */
+const PRIMARY = '#7E3B3B';
+const PRIMARY_DARK = '#5E2B2B';
+const ACCENT = '#B3924C';
+const CREAM = '#F4EDE1';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
@@ -35,6 +39,7 @@ type Props = {
 
 /* ─── Skeleton shimmer ─────────────────────────────── */
 function SkeletonShimmer({ style }: { style?: object }) {
+  const { colors } = useTheme();
   const shimmer = useRef(new Animated.Value(0.35)).current;
   useEffect(() => {
     Animated.loop(
@@ -44,7 +49,7 @@ function SkeletonShimmer({ style }: { style?: object }) {
       ]),
     ).start();
   }, []);
-  return <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#1C1C1C', opacity: shimmer }, style]} />;
+  return <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: colors.bgInput, opacity: shimmer }, style]} />;
 }
 
 /* ─── Plate illustration (no SVG) ─────────────────── */
@@ -158,21 +163,12 @@ function HalfFill({
           />
         ) : produto ? (
           <LinearGradient
-            colors={isLeft ? [PRIMARY, '#7B1A12'] : [ACCENT, '#5C4400']}
+            colors={isLeft ? [PRIMARY, PRIMARY_DARK] : [ACCENT, '#7A5A1E']}
             style={StyleSheet.absoluteFill}
           />
         ) : null}
       </Animated.View>
 
-      {/* Dark gradient + name label — only when flavor chosen */}
-      {produto && (
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.65)']}
-          style={[StyleSheet.absoluteFill, { justifyContent: 'flex-end' }]}
-        >
-          <Text style={hf.label} numberOfLines={2}>{produto.nome}</Text>
-        </LinearGradient>
-      )}
     </View>
   );
 }
@@ -186,14 +182,6 @@ const hf = StyleSheet.create({
   },
   halfLeft:  { borderTopLeftRadius:  H_CIRCLE, borderBottomLeftRadius:  H_CIRCLE },
   halfRight: { borderTopRightRadius: H_CIRCLE, borderBottomRightRadius: H_CIRCLE },
-  label: {
-    color: '#FFFFFF',
-    fontSize: 10,
-    fontWeight: '700',
-    textAlign: 'center',
-    paddingHorizontal: 6,
-    paddingBottom: 10,
-  },
 });
 
 /* ─── FlavorRow ────────────────────────────────────── */
@@ -236,11 +224,11 @@ function FlavorRow({
         style={[fr.row, { backgroundColor: colors.bgElevated, borderColor: colors.border }, selected && fr.rowSelected]}
       >
         {/* Thumbnail */}
-        <View style={fr.thumb}>
+        <View style={[fr.thumb, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
           {produto.urlImagem ? (
             <Image source={{ uri: produto.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           ) : (
-            <LinearGradient colors={['#2A1A1A', '#111111']} style={StyleSheet.absoluteFill} />
+            <Ionicons name="pizza-outline" size={24} color={colors.textMuted} />
           )}
         </View>
 
@@ -248,14 +236,14 @@ function FlavorRow({
         <View style={fr.info}>
           <Text style={[fr.name, { color: colors.text }]} numberOfLines={1}>{produto.nome}</Text>
           {produto.descricao ? (
-            <Text style={fr.desc} numberOfLines={1}>{produto.descricao}</Text>
+            <Text style={[fr.desc, { color: colors.textMuted }]} numberOfLines={1}>{produto.descricao}</Text>
           ) : null}
-          <Text style={fr.price}>{formatCurrency(produto.preco)}</Text>
+          <Text style={[fr.price, { color: colors.accent }]}>{formatCurrency(produto.preco)}</Text>
         </View>
 
         {/* Selected indicator */}
-        <View style={[fr.check, selected && fr.checkActive]}>
-          {selected && <Ionicons name="checkmark" size={14} color="#FFFFFF" />}
+        <View style={[fr.check, { borderColor: colors.borderStrong }, selected && { backgroundColor: colors.primary, borderColor: colors.primary }]}>
+          {selected && <Ionicons name="checkmark" size={14} color={CREAM} />}
         </View>
       </TouchableOpacity>
     </Animated.View>
@@ -266,44 +254,36 @@ const fr = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: CARD_BG,
-    borderRadius: 18,
+    borderRadius: radius.md,
     marginBottom: 10,
     padding: 12,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
     gap: 12,
   },
   rowSelected: {
     borderColor: PRIMARY,
-    backgroundColor: `${PRIMARY}12`,
   },
   thumb: {
-    width: 58,
-    height: 58,
-    borderRadius: 16,
+    width: 56,
+    height: 56,
+    borderRadius: radius.sm,
+    borderWidth: 1,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
     alignItems: 'center',
     justifyContent: 'center',
   },
   info: { flex: 1 },
-  name: { color: '#F5F0E8', fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  desc: { color: 'rgba(255,255,255,0.35)', fontSize: 11, marginBottom: 4 },
-  price: { color: ACCENT, fontSize: 13, fontWeight: '800' },
+  name: { fontFamily: fontFamily.headingMedium, fontSize: 15, marginBottom: 2 },
+  desc: { fontFamily: fontFamily.bodyRegular, fontSize: 11, marginBottom: 4 },
+  price: { fontFamily: fontFamily.headingBold, fontSize: 14 },
   check: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
-    borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.15)',
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    borderWidth: 1,
     backgroundColor: 'transparent',
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  checkActive: {
-    backgroundColor: PRIMARY,
-    borderColor: PRIMARY,
   },
 });
 
@@ -315,6 +295,7 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
 
   const [produtos, setProdutos] = useState<Produto[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<0 | 1>(0); // 0 = Sabor 1, 1 = Sabor 2
   const [sabor1, setSabor1] = useState<Produto | null>(null);
   const [sabor2, setSabor2] = useState<Produto | null>(null);
@@ -330,16 +311,22 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
   const headerY = useRef(new Animated.Value(-20)).current;
   const headerOpacity = useRef(new Animated.Value(0)).current;
 
+  const loadProdutos = useCallback(() => {
+    setLoading(true);
+    setError(null);
+    productService.getProducts({ categoriaId: categoryId, disponivel: true })
+      .then((data) => setProdutos(data))
+      .catch((e: any) => setError(e.message ?? 'Não foi possível carregar os sabores'))
+      .finally(() => setLoading(false));
+  }, [categoryId]);
+
   useEffect(() => {
     Animated.parallel([
       Animated.timing(headerOpacity, { toValue: 1, duration: 380, useNativeDriver: true }),
       Animated.spring(headerY, { toValue: 0, useNativeDriver: true, speed: 14, bounciness: 5 }),
     ]).start();
 
-    productService.getProducts({ categoriaId: categoryId, disponivel: true })
-      .then((data) => setProdutos(data))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    loadProdutos();
   }, [categoryId]);
 
   function switchTab(idx: 0 | 1) {
@@ -388,7 +375,7 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
       <Animated.View
         style={[ps.header, { paddingTop: insets.top + 12, opacity: headerOpacity, transform: [{ translateY: headerY }] }]}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={ps.backBtn} activeOpacity={0.75}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={[ps.backBtn, { backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border }]} activeOpacity={0.75}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={ps.headerMid}>
@@ -402,7 +389,7 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
       {/* Pizza circle */}
       <View style={ps.circleWrap}>
         {/* Outer ring */}
-        <View style={ps.circleOuter}>
+        <View style={[ps.circleOuter, { borderColor: colors.border }]}>
           {/* Divider line */}
           <View style={[ps.dividerLine, { backgroundColor: colors.bg }]} />
 
@@ -417,13 +404,13 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
         <View style={ps.hintRow}>
           <View style={[ps.hint, activeTab === 0 && ps.hintActive]}>
             <Ionicons name="arrow-up" size={12} color={activeTab === 0 ? PRIMARY : 'transparent'} />
-            <Text style={[ps.hintText, activeTab === 0 && ps.hintTextActive]}>
+            <Text style={[ps.hintText, { color: colors.textMuted }, activeTab === 0 && ps.hintTextActive]}>
               {sabor1 ? sabor1.nome.split(' ')[0] : '1º Sabor'}
             </Text>
           </View>
           <View style={[ps.hint, activeTab === 1 && ps.hintActive]}>
             <Ionicons name="arrow-up" size={12} color={activeTab === 1 ? ACCENT : 'transparent'} />
-            <Text style={[ps.hintText, activeTab === 1 && { color: ACCENT }]}>
+            <Text style={[ps.hintText, { color: colors.textMuted }, activeTab === 1 && { color: ACCENT }]}>
               {sabor2 ? sabor2.nome.split(' ')[0] : '2º Sabor'}
             </Text>
           </View>
@@ -443,7 +430,7 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
               style={ps.tab}
               activeOpacity={0.75}
             >
-              <Text style={[ps.tabLabel, activeTab === idx && ps.tabLabelActive]}>{label}</Text>
+              <Text style={[ps.tabLabel, { color: colors.textSecondary }, activeTab === idx && { color: colors.text }]}>{label}</Text>
               {idx === 0 && sabor1 && (
                 <View style={ps.tabDot} />
               )}
@@ -462,8 +449,11 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
       {/* Flavor list */}
       {loading ? (
         <View style={ps.loadingWrap}>
-          <Text style={ps.loadingText}>Carregando sabores...</Text>
+          <ActivityIndicator color={colors.primary} />
+          <Text style={[ps.loadingText, { color: colors.textMuted }]}>Carregando sabores...</Text>
         </View>
+      ) : error ? (
+        <ErrorMessage message={error} onRetry={loadProdutos} />
       ) : (
         <FlatList
           data={produtos}
@@ -485,7 +475,8 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
           }}
           ListEmptyComponent={
             <View style={ps.emptyWrap}>
-              <Text style={ps.emptyText}>Nenhum sabor disponível</Text>
+              <Ionicons name="restaurant-outline" size={40} color={colors.textMuted} />
+              <Text style={[ps.emptyText, { color: colors.textMuted }]}>Nenhum sabor disponível</Text>
             </View>
           }
         />
@@ -495,7 +486,7 @@ export function PizzaFlavorScreen({ navigation, route }: Props) {
 }
 
 const ps = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1 },
 
   header: {
     flexDirection: 'row',
@@ -507,14 +498,13 @@ const ps = StyleSheet.create({
   backBtn: {
     width: 40,
     height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderRadius: radius.md,
     alignItems: 'center',
     justifyContent: 'center',
   },
   headerMid: { flex: 1 },
-  headerCat: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600', marginBottom: 2 },
-  headerTitle: { color: '#F5F0E8', fontSize: 18, fontWeight: '900' },
+  headerCat: { fontFamily: fontFamily.bodySemiBold, fontSize: 10, letterSpacing: letterSpacing.caps, textTransform: 'uppercase', marginBottom: 2 },
+  headerTitle: { fontFamily: fontFamily.headingBold, fontSize: 18 },
 
   /* Circle */
   circleWrap: { alignItems: 'center', paddingBottom: 8 },
@@ -523,14 +513,8 @@ const ps = StyleSheet.create({
     height: CIRCLE + 8,
     borderRadius: (CIRCLE + 8) / 2,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.08)',
     flexDirection: 'row',
     overflow: 'hidden',
-    shadowColor: PRIMARY,
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-    elevation: 10,
   },
   dividerLine: {
     position: 'absolute',
@@ -538,7 +522,6 @@ const ps = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 2,
-    backgroundColor: BG,
     zIndex: 10,
   },
 
@@ -550,7 +533,7 @@ const ps = StyleSheet.create({
   },
   hint: { alignItems: 'center', gap: 2 },
   hintActive: {},
-  hintText: { color: 'rgba(255,255,255,0.2)', fontSize: 10, fontWeight: '700' },
+  hintText: { fontFamily: fontFamily.bodyBold, fontSize: 10 },
   hintTextActive: { color: PRIMARY },
 
   /* Tabs */
@@ -565,11 +548,9 @@ const ps = StyleSheet.create({
     gap: 6,
   },
   tabLabel: {
-    color: 'rgba(255,255,255,0.3)',
+    fontFamily: fontFamily.bodyBold,
     fontSize: 13,
-    fontWeight: '700',
   },
-  tabLabelActive: { color: '#F5F0E8' },
   tabDot: {
     width: 6,
     height: 6,
@@ -582,8 +563,8 @@ const ps = StyleSheet.create({
     borderRadius: 2,
   },
 
-  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  loadingText: { color: 'rgba(255,255,255,0.25)', fontSize: 13 },
-  emptyWrap: { alignItems: 'center', paddingVertical: 40 },
-  emptyText: { color: 'rgba(255,255,255,0.2)', fontSize: 14 },
+  loadingWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10 },
+  loadingText: { fontFamily: fontFamily.bodyRegular, fontSize: 13 },
+  emptyWrap: { alignItems: 'center', paddingVertical: 40, gap: 10 },
+  emptyText: { fontFamily: fontFamily.bodyRegular, fontSize: 14 },
 });

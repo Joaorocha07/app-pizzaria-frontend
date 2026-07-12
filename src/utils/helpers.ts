@@ -3,7 +3,11 @@ export function formatOrderId(id: number): string {
 }
 
 export function formatCurrency(value: number): string {
-  return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  /* Formatação manual: Hermes no Android pode vir sem dados de Intl,
+     fazendo toLocaleString degradar para "49.9" silenciosamente. */
+  const fixed = Number(value).toFixed(2).replace('.', ',');
+  const comMilhar = fixed.replace(/\B(?=(\d{3})+(?=,))/g, '.');
+  return `R$ ${comMilhar}`;
 }
 
 export function formatDate(dateString: string): string {

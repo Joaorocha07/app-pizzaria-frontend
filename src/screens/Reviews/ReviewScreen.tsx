@@ -7,6 +7,7 @@ import { marketingService } from '../../services/marketingService';
 import { Button } from '../../components/common/Button';
 import { Header } from '../../components/common/Header';
 import { AppStackParamList } from '../../navigation/types';
+import { useTheme } from '../../contexts/ThemeContext';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList, 'Review'>;
@@ -17,6 +18,7 @@ const LABELS = ['', 'Ruim', 'Regular', 'Bom', 'Ótimo', 'Excelente'];
 
 export function ReviewScreen({ navigation, route }: Props) {
   const { orderId, productId } = route.params;
+  const { colors } = useTheme();
   const [nota, setNota] = useState(5);
   const [comentario, setComentario] = useState('');
   const [loading, setLoading] = useState(false);
@@ -40,7 +42,7 @@ export function ReviewScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={{ flex: 1, backgroundColor: colors.bg }}>
       <Header title="Avaliar pedido" onBack={() => navigation.goBack()} />
 
       <ScrollView className="flex-1 px-4">
@@ -57,7 +59,7 @@ export function ReviewScreen({ navigation, route }: Props) {
                 <Ionicons
                   name={nota >= n ? 'star' : 'star-outline'}
                   size={40}
-                  color={nota >= n ? '#F4A261' : '#4B5563'}
+                  color={nota >= n ? colors.accent : colors.textMuted}
                 />
               </TouchableOpacity>
             ))}
@@ -67,10 +69,10 @@ export function ReviewScreen({ navigation, route }: Props) {
 
         <Text className="text-offwhite font-bold text-base mb-2">Comentário (opcional)</Text>
         <TextInput
-          className="bg-dark-card border border-dark-border rounded-xl px-4 py-3 text-offwhite text-sm"
+          className="bg-dark-card border border-dark-border rounded-md px-4 py-3 text-offwhite text-sm"
           style={{ height: 100 }}
           placeholder="Conte como foi a experiência..."
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={colors.textMuted}
           multiline
           textAlignVertical="top"
           value={comentario}

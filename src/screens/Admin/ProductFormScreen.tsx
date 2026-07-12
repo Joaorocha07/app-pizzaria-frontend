@@ -22,7 +22,7 @@ import { LoadingSpinner } from '../../components/common/LoadingSpinner';
 import { AppStackParamList } from '../../navigation/types';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
-import { AppColors } from '../../theme/colors';
+import { AppColors } from '../../theme/theme';
 
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
@@ -80,7 +80,7 @@ function createFiStyles(c: AppColors) {
     label: { color: c.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 },
     row: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.bgInput, borderRadius: 16, borderWidth: 1, borderColor: c.borderStrong, paddingHorizontal: 16 },
     multilineRow: { alignItems: 'flex-start', paddingTop: 12 },
-    prefix: { color: '#2A9D8F', fontSize: 16, fontWeight: '700', marginRight: 6 },
+    prefix: { color: '#4C7A56', fontSize: 16, fontWeight: '700', marginRight: 6 },
     input: { flex: 1, color: c.text, fontSize: 15, paddingVertical: 16 },
     inputFilled: { color: c.text },
     multilineInput: { minHeight: 96, paddingVertical: 0 },
@@ -362,7 +362,7 @@ export function AdminProductFormScreen({ navigation, route }: Props) {
             <Ionicons
               name={disponivel ? 'checkmark-circle' : 'pause-circle-outline'}
               size={22}
-              color={disponivel ? '#2A9D8F' : '#666666'}
+              color={disponivel ? '#4C7A56' : '#666666'}
             />
           </View>
           <View style={s.toggleTextWrapper}>
@@ -408,13 +408,13 @@ function createStyles(c: AppColors) {
     imageOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.45)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 6 },
     imageUploadingOverlay: { position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.65)', borderRadius: 20, alignItems: 'center', justifyContent: 'center', gap: 8 },
     imageOverlayText: { color: '#FFFFFF', fontSize: 13, fontWeight: '600' },
-    imageRemoveBtn: { position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 14, backgroundColor: '#E63946', alignItems: 'center', justifyContent: 'center' },
+    imageRemoveBtn: { position: 'absolute', top: 10, right: 10, width: 28, height: 28, borderRadius: 14, backgroundColor: '#8B1A1A', alignItems: 'center', justifyContent: 'center' },
     sectionLabel: { color: c.textSecondary, fontSize: 12, fontWeight: '600', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 },
     catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
     catChip: { paddingHorizontal: 16, paddingVertical: 9, borderRadius: 20, backgroundColor: c.bgInput, borderWidth: 1, borderColor: c.borderStrong },
-    catChipActive: { backgroundColor: 'rgba(230,57,70,0.15)', borderColor: '#E63946' },
+    catChipActive: { backgroundColor: 'rgba(162,59,59,0.15)', borderColor: '#8B1A1A' },
     catChipText: { color: c.textSecondary, fontSize: 13, fontWeight: '600' },
-    catChipTextActive: { color: '#E63946' },
+    catChipTextActive: { color: '#8B1A1A' },
     toggleRow: { flexDirection: 'row', alignItems: 'center', backgroundColor: c.bgInput, borderRadius: 16, padding: 14, marginBottom: 20, borderWidth: 1, borderColor: c.borderStrong, gap: 12 },
     toggleRowActive: { borderColor: 'rgba(42,157,143,0.3)', backgroundColor: 'rgba(42,157,143,0.06)' },
     toggleIconWrapper: { width: 44, height: 44, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
@@ -423,7 +423,7 @@ function createStyles(c: AppColors) {
     toggleLabelActive: { color: c.text },
     toggleSub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
     switchTrack: { width: 44, height: 24, borderRadius: 12, backgroundColor: c.borderStrong, justifyContent: 'center', paddingHorizontal: 2 },
-    switchTrackActive: { backgroundColor: '#2A9D8F' },
+    switchTrackActive: { backgroundColor: '#4C7A56' },
     switchThumb: { width: 20, height: 20, borderRadius: 10, backgroundColor: c.textMuted, alignSelf: 'flex-start' },
     switchThumbActive: { backgroundColor: '#FFFFFF', alignSelf: 'flex-end', shadowColor: '#000', shadowOffset: { width: 0, height: 2 }, shadowOpacity: 0.3, shadowRadius: 4, elevation: 4 },
   });

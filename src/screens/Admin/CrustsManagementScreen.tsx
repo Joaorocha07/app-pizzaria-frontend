@@ -61,7 +61,7 @@ export function AdminCrustsManagementScreen({ navigation }: Props) {
             onPress={() => navigation.navigate('AdminCrustForm', {})}
             className="p-2"
           >
-            <Ionicons name="add-circle" size={28} color="#E63946" />
+            <Ionicons name="add-circle" size={28} color="#8B1A1A" />
           </TouchableOpacity>
         }
       />
@@ -72,7 +72,7 @@ export function AdminCrustsManagementScreen({ navigation }: Props) {
           <RefreshControl
             refreshing={refreshing}
             onRefresh={() => { setRefreshing(true); load(); }}
-            tintColor="#E63946"
+            tintColor="#8B1A1A"
           />
         }
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 32 }}
@@ -86,7 +86,7 @@ export function AdminCrustsManagementScreen({ navigation }: Props) {
         renderItem={({ item }) => (
           <View className="bg-dark-card rounded-2xl p-4 mb-3 flex-row items-center">
             <View className="w-10 h-10 rounded-full bg-dark-border items-center justify-center mr-3">
-              <Ionicons name="pizza-outline" size={20} color="#F4A261" />
+              <Ionicons name="pizza-outline" size={20} color="#B8862E" />
             </View>
             <View className="flex-1">
               <Text className="text-offwhite font-bold">{item.nome}</Text>
@@ -99,13 +99,13 @@ export function AdminCrustsManagementScreen({ navigation }: Props) {
                 onPress={() => navigation.navigate('AdminCrustForm', { crustId: item.id })}
                 className="w-9 h-9 bg-dark-border rounded-xl items-center justify-center"
               >
-                <Ionicons name="create-outline" size={18} color="#F4A261" />
+                <Ionicons name="create-outline" size={18} color="#B8862E" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => handleDelete(item)}
                 className="w-9 h-9 bg-red-900/30 rounded-xl items-center justify-center"
               >
-                <Ionicons name="trash-outline" size={18} color="#EF4444" />
+                <Ionicons name="trash-outline" size={18} color="#A23B3B" />
               </TouchableOpacity>
             </View>
           </View>

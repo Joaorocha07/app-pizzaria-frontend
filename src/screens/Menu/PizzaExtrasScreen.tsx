@@ -14,6 +14,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { RouteProp } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { productService } from '../../services/productService';
 import { marketingService } from '../../services/marketingService';
@@ -22,13 +23,20 @@ import { Produto, TamanhoProduto, Borda } from '../../types';
 import { formatCurrency } from '../../utils/helpers';
 import { AppStackParamList } from '../../navigation/types';
 import { useTheme } from '../../contexts/ThemeContext';
+import { fontFamily, letterSpacing, radius } from '../../theme/theme';
 
 const { width: SW } = Dimensions.get('window');
 const CIRCLE = SW * 0.46;
 const H_CIRCLE = CIRCLE / 2;
-const PRIMARY = '#C0392B';
-const ACCENT = '#B8860B';
-const BG = '#0A0A0A';
+const RING_PAD = 10;
+const RING_SIZE = CIRCLE + RING_PAD * 2;
+const RING_STROKE = 5;
+/* Tons fixos usados apenas sobre foto/superfície primária (iguais nos 2 temas) */
+const PRIMARY = '#7E3B3B';
+const PRIMARY_DARK = '#5E2B2B';
+const ACCENT = '#B3924C';
+const CREAM = '#F4EDE1';
+const SUCCESS = '#6E8B6A';
 type Props = {
   navigation: NativeStackNavigationProp<AppStackParamList>;
   route: RouteProp<AppStackParamList, 'PizzaExtras'>;
@@ -50,6 +58,8 @@ function CompletePizzaCircle({
   const { colors } = useTheme();
   const enterScale   = useRef(new Animated.Value(0.7)).current;
   const enterOpacity = useRef(new Animated.Value(0)).current;
+  const ringOpacity = useRef(new Animated.Value(0)).current;
+  const ringScale   = useRef(new Animated.Value(0.9)).current;
 
   useEffect(() => {
     Animated.parallel([
@@ -58,11 +68,18 @@ function CompletePizzaCircle({
     ]).start();
   }, []);
 
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(ringOpacity, { toValue: selectedBorda ? 1 : 0, duration: 280, useNativeDriver: true }),
+      Animated.spring(ringScale, { toValue: selectedBorda ? 1 : 0.9, useNativeDriver: true, speed: 14, bounciness: 6 }),
+    ]).start();
+  }, [selectedBorda]);
+
   /* Melhoria 1: Half renders image filling the half precisely */
   function Half({ produto, side }: { produto: Produto | null; side: 'left' | 'right' }) {
     const gradColors: [string, string] = side === 'left'
-      ? [PRIMARY, '#7B1A12']
-      : [ACCENT, '#5C4400'];
+      ? [PRIMARY, PRIMARY_DARK]
+      : [ACCENT, '#7A5A1E'];
     const [imgLoaded, setImgLoaded] = React.useState(false);
     const shimmer = useRef(new Animated.Value(0.35)).current;
     useEffect(() => {
@@ -80,7 +97,7 @@ function CompletePizzaCircle({
     return (
       <View style={[cp.half, side === 'left' ? cp.halfLeft : cp.halfRight]}>
         {produto?.urlImagem && !imgLoaded && (
-          <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: '#1C1C1C', opacity: shimmer }]} />
+          <Animated.View style={[StyleSheet.absoluteFill, { backgroundColor: 'rgba(107,81,56,0.35)', opacity: shimmer }]} />
         )}
         {produto?.urlImagem ? (
           <Image
@@ -93,8 +110,6 @@ function CompletePizzaCircle({
         ) : (
           <LinearGradient colors={gradColors} style={StyleSheet.absoluteFill} />
         )}
-        <LinearGradient colors={['transparent', 'rgba(0,0,0,0.6)']} style={StyleSheet.absoluteFill} />
-        <Text style={cp.halfLabel} numberOfLines={2}>{produto?.nome ?? '–'}</Text>
       </View>
     );
   }
@@ -102,19 +117,38 @@ function CompletePizzaCircle({
   return (
     <Animated.View style={[cp.wrap, { transform: [{ scale: enterScale }], opacity: enterOpacity }]}>
       <View style={cp.circleWrap}>
+        {/* Anel de borda — aparece quando uma borda é selecionada */}
+        <Animated.View
+          pointerEvents="none"
+          style={[cp.ringWrap, { opacity: ringOpacity, transform: [{ scale: ringScale }] }]}
+        >
+          <Svg width={RING_SIZE} height={RING_SIZE}>
+            <Circle
+              cx={RING_SIZE / 2}
+              cy={RING_SIZE / 2}
+              r={(RING_SIZE - RING_STROKE) / 2}
+              stroke={colors.accent}
+              strokeWidth={RING_STROKE}
+              fill="none"
+              strokeDasharray="7 6"
+              strokeLinecap="round"
+            />
+          </Svg>
+        </Animated.View>
+
         <View style={cp.circle}>
           <Half produto={produto1} side="left" />
           <View style={[cp.divider, { backgroundColor: colors.bg }]} />
           <Half produto={produto2} side="right" />
         </View>
         <View style={cp.badge}>
-          <Ionicons name="checkmark" size={14} color="#FFFFFF" />
+          <Ionicons name="checkmark" size={14} color={CREAM} />
         </View>
       </View>
 
-      <TouchableOpacity onPress={onRemove} style={cp.removeBtn} activeOpacity={0.8}>
-        <Ionicons name="trash-outline" size={14} color="#FFFFFF" />
-        <Text style={cp.removeBtnText}>Alterar sabores</Text>
+      <TouchableOpacity onPress={onRemove} style={[cp.removeBtn, { backgroundColor: colors.bgCard, borderColor: colors.border }]} activeOpacity={0.8}>
+        <Ionicons name="trash-outline" size={14} color={colors.textSecondary} />
+        <Text style={[cp.removeBtnText, { color: colors.textSecondary }]}>Alterar sabores</Text>
       </TouchableOpacity>
     </Animated.View>
   );
@@ -123,6 +157,13 @@ function CompletePizzaCircle({
 const cp = StyleSheet.create({
   wrap: { alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   circleWrap: { width: CIRCLE, height: CIRCLE },
+  ringWrap: {
+    position: 'absolute',
+    top: -RING_PAD,
+    left: -RING_PAD,
+    width: RING_SIZE,
+    height: RING_SIZE,
+  },
 
   circle: {
     width: CIRCLE,
@@ -131,7 +172,7 @@ const cp = StyleSheet.create({
     flexDirection: 'row',
     overflow: 'hidden',
     borderWidth: 2,
-    borderColor: 'rgba(255,255,255,0.1)',
+    borderColor: 'rgba(184,134,46,0.18)',
     shadowColor: PRIMARY,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.3,
@@ -142,7 +183,7 @@ const cp = StyleSheet.create({
     width: H_CIRCLE,
     height: CIRCLE,
     overflow: 'hidden',
-    backgroundColor: '#1A1A1A',
+    backgroundColor: '#3A2C20',
   },
   halfLeft: {},
   halfRight: {},
@@ -152,33 +193,19 @@ const cp = StyleSheet.create({
     top: 0,
     bottom: 0,
     width: 2,
-    backgroundColor: BG,
     zIndex: 10,
-  },
-  halfLabel: {
-    position: 'absolute',
-    bottom: 8,
-    left: 4,
-    right: 4,
-    color: '#FFFFFF',
-    fontSize: 9,
-    fontWeight: '700',
-    textAlign: 'center',
-    zIndex: 15,
   },
   removeBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
     marginTop: 14,
-    backgroundColor: 'rgba(255,255,255,0.07)',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
     paddingHorizontal: 16,
     paddingVertical: 8,
-    borderRadius: 20,
+    borderRadius: radius.md,
   },
-  removeBtnText: { color: 'rgba(255,255,255,0.6)', fontSize: 12, fontWeight: '600' },
+  removeBtnText: { fontFamily: fontFamily.bodySemiBold, fontSize: 12 },
   badge: {
     position: 'absolute',
     top: 2,
@@ -186,11 +213,11 @@ const cp = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#22C55E',
+    backgroundColor: SUCCESS,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    borderColor: BG,
+    borderColor: CREAM,
     zIndex: 20,
   },
 });
@@ -207,23 +234,20 @@ function ExtraCard({
 }) {
   const { colors } = useTheme();
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[ec.card, { backgroundColor: colors.bgElevated, borderColor: colors.border }, selected && ec.cardSelected]}>
-      <View style={ec.imgWrap}>
+    <TouchableOpacity onPress={onPress} activeOpacity={0.85} style={[ec.card, { backgroundColor: colors.bgCard, borderColor: colors.border }, selected && ec.cardSelected]}>
+      <View style={[ec.imgWrap, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
         {borda.urlImagem ? (
           <Image source={{ uri: borda.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
         ) : (
-          <LinearGradient
-            colors={['#2A2A2A', '#111111']}
-            style={StyleSheet.absoluteFill}
-          />
+          <Ionicons name="ellipse-outline" size={20} color={colors.textMuted} />
         )}
       </View>
       <View style={ec.info}>
         <Text style={[ec.name, { color: colors.text }]}>{borda.nome}</Text>
-        <Text style={ec.price}>+ {formatCurrency(borda.preco)}</Text>
+        <Text style={[ec.price, { color: colors.accent }]}>+ {formatCurrency(borda.preco)}</Text>
       </View>
-      <View style={[ec.check, selected && ec.checkActive]}>
-        {selected && <Ionicons name="checkmark" size={13} color="#FFFFFF" />}
+      <View style={[ec.check, { borderColor: colors.borderStrong }, selected && { backgroundColor: colors.accent, borderColor: colors.accent }]}>
+        {selected && <Ionicons name="checkmark" size={13} color={CREAM} />}
       </View>
     </TouchableOpacity>
   );
@@ -233,30 +257,28 @@ const ec = StyleSheet.create({
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#111111',
-    borderRadius: 16,
+    borderRadius: radius.md,
     padding: 12,
     marginBottom: 10,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.07)',
     gap: 12,
   },
-  cardSelected: { borderColor: ACCENT, backgroundColor: `${ACCENT}10` },
+  cardSelected: { borderColor: ACCENT },
   imgWrap: {
     width: 46,
     height: 46,
-    borderRadius: 14,
-    backgroundColor: '#1A1A1A',
+    borderRadius: radius.sm,
+    borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
   info: { flex: 1 },
-  name: { color: '#F5F0E8', fontSize: 14, fontWeight: '700', marginBottom: 2 },
-  price: { color: ACCENT, fontSize: 12, fontWeight: '700' },
+  name: { fontFamily: fontFamily.headingMedium, fontSize: 15, marginBottom: 2 },
+  price: { fontFamily: fontFamily.headingBold, fontSize: 13 },
   check: {
-    width: 26, height: 26, borderRadius: 13,
-    borderWidth: 1.5, borderColor: 'rgba(255,255,255,0.15)',
+    width: 24, height: 24, borderRadius: radius.sm,
+    borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
   checkActive: { backgroundColor: ACCENT, borderColor: ACCENT },
@@ -352,7 +374,7 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
     <View style={[es.root, { backgroundColor: colors.bg }]}>
       {/* Header */}
       <View style={[es.header, { paddingTop: insets.top + 12 }]}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={es.backBtn} activeOpacity={0.75}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={[es.backBtn, { backgroundColor: colors.bgCard, borderWidth: 1, borderColor: colors.border }]} activeOpacity={0.75}>
           <Ionicons name="chevron-back" size={22} color={colors.text} />
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
@@ -370,12 +392,12 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
             selectedBorda={selectedBorda}
             onRemove={() => navigation.goBack()}
           />
-          <Text style={es.pizzaNames}>
+          <Text style={[es.pizzaNames, { color: colors.text }]}>
             {produto1 ? produto1.nome.split(' ').slice(0, 2).join(' ') : '–'}{' '}
             +{' '}
             {produto2 ? produto2.nome.split(' ').slice(0, 2).join(' ') : '–'}
           </Text>
-          <Text style={es.pizzaSize}>{sizeName}</Text>
+          <Text style={[es.pizzaSize, { color: colors.textMuted }]}>{sizeName}</Text>
         </View>
 
         {/* Bordas */}
@@ -389,17 +411,17 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
           <TouchableOpacity
             onPress={() => setSelectedBorda(null)}
             activeOpacity={0.85}
-            style={[ec.card, !selectedBorda && ec.cardSelected]}
+            style={[ec.card, { borderColor: colors.border }, !selectedBorda && ec.cardSelected]}
           >
-            <View style={ec.imgWrap}>
-              <Ionicons name="close-circle-outline" size={22} color="rgba(255,255,255,0.3)" />
+            <View style={[ec.imgWrap, { backgroundColor: colors.bgInput, borderColor: colors.border }]}>
+              <Ionicons name="close-circle-outline" size={22} color={colors.textMuted} />
             </View>
             <View style={ec.info}>
-              <Text style={ec.name}>Sem borda</Text>
-              <Text style={[ec.price, { color: 'rgba(255,255,255,0.3)' }]}>Incluso</Text>
+              <Text style={[ec.name, { color: colors.text }]}>Sem borda</Text>
+              <Text style={[ec.price, { color: colors.textMuted }]}>Incluso</Text>
             </View>
-            <View style={[ec.check, !selectedBorda && ec.checkActive]}>
-              {!selectedBorda && <Ionicons name="checkmark" size={13} color="#FFFFFF" />}
+            <View style={[ec.check, { borderColor: colors.borderStrong }, !selectedBorda && { backgroundColor: colors.accent, borderColor: colors.accent }]}>
+              {!selectedBorda && <Ionicons name="checkmark" size={13} color={CREAM} />}
             </View>
           </TouchableOpacity>
 
@@ -422,7 +444,7 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
         ]}
       >
         <LinearGradient
-          colors={['rgba(10,10,10,0)', '#000000']}
+          colors={['transparent', colors.bg]}
           style={StyleSheet.absoluteFill}
           start={{ x: 0, y: 0 }}
           end={{ x: 0, y: 0.3 }}
@@ -432,25 +454,25 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
         <View style={es.qtyRow}>
           <TouchableOpacity
             onPress={() => setQuantidade((q) => Math.max(1, q - 1))}
-            style={es.qtyBtn}
+            style={[es.qtyBtn, { backgroundColor: colors.bgCard, borderColor: colors.border }]}
             activeOpacity={0.75}
           >
-            <Ionicons name="remove" size={20} color="#FFFFFF" />
+            <Ionicons name="remove" size={20} color={colors.text} />
           </TouchableOpacity>
-          <Text style={es.qtyNum}>{quantidade}</Text>
+          <Text style={[es.qtyNum, { color: colors.text }]}>{quantidade}</Text>
           <TouchableOpacity
             onPress={() => setQuantidade((q) => q + 1)}
-            style={es.qtyBtn}
+            style={[es.qtyBtn, { backgroundColor: colors.bgCard, borderColor: colors.border }]}
             activeOpacity={0.75}
           >
-            <Ionicons name="add" size={20} color="#FFFFFF" />
+            <Ionicons name="add" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Price + CTA */}
         <View style={es.ctaRow}>
           <View>
-            <Text style={es.totalLabel}>Total</Text>
+            <Text style={[es.totalLabel, { color: colors.textMuted }]}>Total</Text>
             <Text style={es.totalPrice}>{formatCurrency(totalFinal)}</Text>
           </View>
           <TouchableOpacity
@@ -460,45 +482,44 @@ export function PizzaExtrasScreen({ navigation, route }: Props) {
             style={[es.ctaBtn, !canAdd && es.ctaBtnDisabled]}
           >
             <Text style={es.ctaBtnText}>Adicionar ao carrinho</Text>
-            <Ionicons name="arrow-forward" size={18} color="#FFFFFF" />
+            <Ionicons name="arrow-forward" size={18} color={CREAM} />
           </TouchableOpacity>
         </View>
       </Animated.View>
 
       {/* Snackbar */}
       <Animated.View
-        style={[es.snack, { bottom: insets.bottom + 100, opacity: snackOpacity, transform: [{ translateY: snackY }] }]}
+        style={[es.snack, { backgroundColor: colors.bgElevated, borderColor: `${SUCCESS}4D`, bottom: insets.bottom + 100, opacity: snackOpacity, transform: [{ translateY: snackY }] }]}
         pointerEvents="none"
       >
-        <Ionicons name="checkmark-circle" size={18} color="#22C55E" />
-        <Text style={es.snackText}>Item adicionado! Finalize seu pedido no carrinho</Text>
+        <Ionicons name="checkmark-circle" size={18} color={SUCCESS} />
+        <Text style={[es.snackText, { color: colors.text }]}>Item adicionado! Finalize seu pedido no carrinho</Text>
       </Animated.View>
     </View>
   );
 }
 
 const es = StyleSheet.create({
-  root: { flex: 1, backgroundColor: BG },
+  root: { flex: 1 },
   header: {
     flexDirection: 'row', alignItems: 'center',
     paddingHorizontal: 20, paddingBottom: 12, gap: 14,
   },
   backBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: 'rgba(255,255,255,0.07)',
+    width: 40, height: 40, borderRadius: radius.md,
     alignItems: 'center', justifyContent: 'center',
   },
-  headerSub: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600', marginBottom: 2 },
-  headerTitle: { color: '#F5F0E8', fontSize: 20, fontWeight: '900' },
+  headerSub: { fontFamily: fontFamily.bodySemiBold, fontSize: 11, marginBottom: 2 },
+  headerTitle: { fontFamily: fontFamily.headingBold, fontSize: 20 },
   circleSection: { alignItems: 'center', paddingTop: 16, paddingBottom: 24 },
   pizzaNames: {
-    color: '#F5F0E8', fontSize: 14, fontWeight: '700',
+    fontFamily: fontFamily.bodyBold, fontSize: 14,
     marginTop: 8, textAlign: 'center', paddingHorizontal: 32,
   },
-  pizzaSize: { color: 'rgba(255,255,255,0.3)', fontSize: 12, fontWeight: '600', marginTop: 4 },
+  pizzaSize: { fontFamily: fontFamily.bodySemiBold, fontSize: 12, marginTop: 4 },
   section: { paddingHorizontal: 20 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 14 },
-  sectionTitle: { color: ACCENT, fontSize: 13, fontWeight: '700' },
+  sectionTitle: { color: ACCENT, fontFamily: fontFamily.bodyBold, fontSize: 13 },
   bar: {
     position: 'absolute', bottom: 0, left: 0, right: 0,
     paddingHorizontal: 20, paddingTop: 24, gap: 12,
@@ -508,27 +529,26 @@ const es = StyleSheet.create({
     justifyContent: 'center', gap: 20, marginBottom: 4,
   },
   qtyBtn: {
-    width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#1A1A1A', borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.1)',
+    width: 40, height: 40, borderRadius: radius.md,
+    borderWidth: 1,
     alignItems: 'center', justifyContent: 'center',
   },
   qtyNum: {
-    color: '#F5F0E8', fontSize: 20, fontWeight: '900',
+    fontFamily: fontFamily.headingBold, fontSize: 20,
     minWidth: 32, textAlign: 'center',
   },
   ctaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  totalLabel: { color: 'rgba(255,255,255,0.35)', fontSize: 11, fontWeight: '600' },
-  totalPrice: { color: ACCENT, fontSize: 22, fontWeight: '900' },
+  totalLabel: { fontFamily: fontFamily.bodySemiBold, fontSize: 11 },
+  totalPrice: { color: ACCENT, fontFamily: fontFamily.headingBold, fontSize: 22 },
   ctaBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
     backgroundColor: PRIMARY,
-    paddingHorizontal: 20, paddingVertical: 14, borderRadius: 18,
+    paddingHorizontal: 20, paddingVertical: 14, borderRadius: radius.md,
     shadowColor: PRIMARY, shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.5, shadowRadius: 10, elevation: 8,
   },
   ctaBtnDisabled: { opacity: 0.4 },
-  ctaBtnText: { color: '#FFFFFF', fontSize: 14, fontWeight: '800' },
+  ctaBtnText: { color: CREAM, fontFamily: fontFamily.bodyBold, fontSize: 14 },
   snack: {
     position: 'absolute',
     left: 20,
@@ -536,10 +556,8 @@ const es = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    backgroundColor: '#1A1A1A',
     borderWidth: 1,
-    borderColor: 'rgba(34,197,94,0.3)',
-    borderRadius: 16,
+    borderRadius: radius.md,
     paddingHorizontal: 16,
     paddingVertical: 12,
     shadowColor: '#000',
@@ -550,8 +568,7 @@ const es = StyleSheet.create({
   },
   snackText: {
     flex: 1,
-    color: '#FFFFFF',
+    fontFamily: fontFamily.bodySemiBold,
     fontSize: 13,
-    fontWeight: '600',
   },
 });

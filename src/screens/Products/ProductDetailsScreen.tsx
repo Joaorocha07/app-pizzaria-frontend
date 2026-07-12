@@ -78,8 +78,8 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
           {produto.urlImagem ? (
             <Image source={{ uri: produto.urlImagem }} className="w-full h-72" resizeMode="cover" />
           ) : (
-            <View className="w-full h-72 bg-dark-border items-center justify-center">
-              <Ionicons name="pizza-outline" size={80} color="rgba(255,255,255,0.12)" />
+            <View className="w-full h-72 items-center justify-center" style={{ backgroundColor: colors.bgInput }}>
+              <Ionicons name="pizza-outline" size={80} color={colors.textMuted} />
             </View>
           )}
           <Header
@@ -96,27 +96,28 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
           </View>
 
           {produto.descricao && (
-            <Text className="text-gray-400 text-sm leading-5 mb-4">{produto.descricao}</Text>
+            <Text className="text-sm leading-5 mb-4" style={{ color: colors.textSecondary }}>{produto.descricao}</Text>
           )}
 
           {tamanhos.length > 0 && (
             <View className="mb-4">
-              <Text className="text-offwhite font-bold text-base mb-2">Tamanho</Text>
+              <Text className="font-bold text-base mb-2" style={{ color: colors.text }}>Tamanho</Text>
               <View className="flex-row flex-wrap gap-2">
                 {tamanhos.map((t) => (
                   <TouchableOpacity
                     key={t.id}
                     onPress={() => setSelectedTamanho(t)}
-                    className={`px-4 py-2 rounded-xl border ${
+                    className={`px-4 py-2 rounded-md border ${
                       selectedTamanho?.id === t.id
                         ? 'bg-primary border-primary'
-                        : 'bg-dark-card border-dark-border'
+                        : ''
                     }`}
+                    style={selectedTamanho?.id === t.id ? undefined : { backgroundColor: colors.bgCard, borderColor: colors.border }}
                   >
-                    <Text className={selectedTamanho?.id === t.id ? 'text-offwhite font-bold' : 'text-gray-400'}>
+                    <Text className={selectedTamanho?.id === t.id ? 'text-offwhite font-bold' : ''} style={selectedTamanho?.id === t.id ? undefined : { color: colors.textSecondary }}>
                       {t.nome}
                     </Text>
-                    <Text className={`text-xs ${selectedTamanho?.id === t.id ? 'text-offwhite/70' : 'text-gray-500'}`}>
+                    <Text className="text-xs" style={{ color: selectedTamanho?.id === t.id ? 'rgba(244,237,225,0.75)' : colors.textMuted }}>
                       {formatCurrency(produto.preco * t.fatorPreco)}
                     </Text>
                   </TouchableOpacity>
@@ -127,15 +128,16 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
 
           {bordas.length > 0 && (
             <View className="mb-4">
-              <Text className="text-offwhite font-bold text-base mb-2">Borda recheada</Text>
+              <Text className="font-bold text-base mb-2" style={{ color: colors.text }}>Borda recheada</Text>
               <View className="flex-row flex-wrap gap-2">
                 <TouchableOpacity
                   onPress={() => setSelectedBorda(undefined)}
-                  className={`px-4 py-2 rounded-xl border ${
-                    !selectedBorda ? 'bg-primary border-primary' : 'bg-dark-card border-dark-border'
+                  className={`px-4 py-2 rounded-md border ${
+                    !selectedBorda ? 'bg-primary border-primary' : ''
                   }`}
+                  style={!selectedBorda ? undefined : { backgroundColor: colors.bgCard, borderColor: colors.border }}
                 >
-                  <Text className={!selectedBorda ? 'text-offwhite font-bold' : 'text-gray-400'}>
+                  <Text className={!selectedBorda ? 'text-offwhite font-bold' : ''} style={!selectedBorda ? undefined : { color: colors.textSecondary }}>
                     Sem borda
                   </Text>
                 </TouchableOpacity>
@@ -143,16 +145,17 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
                   <TouchableOpacity
                     key={b.id}
                     onPress={() => setSelectedBorda(b)}
-                    className={`px-4 py-2 rounded-xl border ${
+                    className={`px-4 py-2 rounded-md border ${
                       selectedBorda?.id === b.id
                         ? 'bg-primary border-primary'
-                        : 'bg-dark-card border-dark-border'
+                        : ''
                     }`}
+                    style={selectedBorda?.id === b.id ? undefined : { backgroundColor: colors.bgCard, borderColor: colors.border }}
                   >
-                    <Text className={selectedBorda?.id === b.id ? 'text-offwhite font-bold' : 'text-gray-400'}>
+                    <Text className={selectedBorda?.id === b.id ? 'text-offwhite font-bold' : ''} style={selectedBorda?.id === b.id ? undefined : { color: colors.textSecondary }}>
                       {b.nome}
                     </Text>
-                    <Text className={`text-xs ${selectedBorda?.id === b.id ? 'text-offwhite/70' : 'text-gray-500'}`}>
+                    <Text className="text-xs" style={{ color: selectedBorda?.id === b.id ? 'rgba(244,237,225,0.75)' : colors.textMuted }}>
                       +{formatCurrency(b.preco)}
                     </Text>
                   </TouchableOpacity>
@@ -161,19 +164,19 @@ export function ProductDetailsScreen({ navigation, route }: Props) {
             </View>
           )}
 
-          <View className="flex-row items-center justify-between mb-4 rounded-xl p-4" style={{ backgroundColor: colors.bgElevated }}>
+          <View className="flex-row items-center justify-between mb-4 rounded-md p-4" style={{ backgroundColor: colors.bgElevated }}>
             <Text className="font-bold" style={{ color: colors.text }}>Quantidade</Text>
             <View className="flex-row items-center gap-4">
               <TouchableOpacity
                 onPress={() => setQuantidade((q) => Math.max(1, q - 1))}
-                className="w-9 h-9 bg-dark-border rounded-full items-center justify-center"
+                className="w-9 h-9 rounded items-center justify-center" style={{ backgroundColor: colors.bgInput }}
               >
-                <Text className="text-offwhite text-lg font-bold">−</Text>
+                <Text className="text-lg font-bold" style={{ color: colors.text }}>−</Text>
               </TouchableOpacity>
-              <Text className="text-offwhite text-lg font-bold w-6 text-center">{quantidade}</Text>
+              <Text className="text-lg font-bold w-6 text-center" style={{ color: colors.text }}>{quantidade}</Text>
               <TouchableOpacity
                 onPress={() => setQuantidade((q) => q + 1)}
-                className="w-9 h-9 bg-primary rounded-full items-center justify-center"
+                className="w-9 h-9 bg-primary rounded items-center justify-center"
               >
                 <Text className="text-offwhite text-lg font-bold">+</Text>
               </TouchableOpacity>

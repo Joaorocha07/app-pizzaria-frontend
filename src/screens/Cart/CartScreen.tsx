@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
   TextInput,
+  Image,
   Alert,
+  StyleSheet,
 } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { Ionicons } from '@expo/vector-icons';
 import { useCart } from '../../contexts/CartContext';
+import { useTheme } from '../../contexts/ThemeContext';
+import { AppColors, fontFamily, radius } from '../../theme/theme';
 import { Header } from '../../components/common/Header';
 import { marketingService } from '../../services/marketingService';
 import { Button } from '../../components/common/Button';
@@ -33,6 +37,8 @@ export function CartScreen({ navigation }: Props) {
     removeCoupon,
     clearCart,
   } = useCart();
+  const { colors } = useTheme();
+  const s = useMemo(() => createStyles(colors), [colors]);
   const [codigoCupom, setCodigoCupom] = useState('');
   const [loadingCupom, setLoadingCupom] = useState(false);
 
@@ -51,99 +57,106 @@ export function CartScreen({ navigation }: Props) {
     }
   }
 
+  function handleClearCart() {
+    Alert.alert('Limpar', 'Deseja limpar o carrinho?', [
+      { text: 'Cancelar', style: 'cancel' },
+      { text: 'Limpar', style: 'destructive', onPress: clearCart },
+    ]);
+  }
+
   if (itens.length === 0) {
     return (
-      <View className="flex-1 bg-dark items-center justify-center px-6">
-        <Ionicons name="cart-outline" size={64} color="#6B7280" style={{ marginBottom: 16 }} />
-        <Text className="text-offwhite text-xl font-bold mb-2">Carrinho vazio</Text>
-        <Text className="text-gray-400 text-center mb-6">
-          Adicione produtos ao seu carrinho para continuar
-        </Text>
+      <View style={[s.empty, { backgroundColor: colors.bg }]}>
+        <Ionicons name="cart-outline" size={64} color={colors.textMuted} style={{ marginBottom: 16 }} />
+        <Text style={s.emptyTitle}>Carrinho vazio</Text>
+        <Text style={s.emptySub}>Adicione produtos ao seu carrinho para continuar</Text>
         <Button title="Ver cardápio" onPress={() => navigation.goBack()} />
       </View>
     );
   }
 
   return (
-    <View className="flex-1 bg-dark">
+    <View style={[s.root, { backgroundColor: colors.bg }]}>
       <Header
         title="Carrinho"
         onBack={() => navigation.goBack()}
         rightElement={
-          <TouchableOpacity onPress={() => Alert.alert('Limpar', 'Deseja limpar o carrinho?', [
-            { text: 'Cancelar', style: 'cancel' },
-            { text: 'Limpar', style: 'destructive', onPress: clearCart },
-          ])} style={{ width: 44, alignItems: 'flex-end' }}>
-            <Ionicons name="trash-outline" size={20} color="#EF4444" />
+          <TouchableOpacity onPress={handleClearCart} style={{ width: 44, alignItems: 'flex-end' }} activeOpacity={0.7}>
+            <Ionicons name="trash-outline" size={20} color={colors.danger} />
           </TouchableOpacity>
         }
       />
 
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1 px-4">
+      <ScrollView showsVerticalScrollIndicator={false} style={s.scroll}>
         {itens.map((item, index) => (
-          <View key={index} className="bg-dark-card rounded-2xl p-4 mb-3">
-            <View className="flex-row items-start justify-between">
-              <View className="flex-1">
-                <Text className="text-offwhite font-bold text-base">{item.produto.nome}</Text>
-                {item.tamanho && (
-                  <Text className="text-gray-400 text-xs mt-0.5">Tamanho: {item.tamanho.nome}</Text>
-                )}
-                {item.borda && (
-                  <Text className="text-gray-400 text-xs">Borda: {item.borda.nome}</Text>
-                )}
-                <Text className="text-accent font-bold mt-1">
-                  {formatCurrency(item.precoUnitario)}
-                </Text>
-              </View>
-              <TouchableOpacity onPress={() => removeItem(index)} className="ml-2 p-1">
-                <Ionicons name="close-circle" size={22} color="#EF4444" />
-              </TouchableOpacity>
+          <View key={index} style={s.itemCard}>
+            <View style={s.itemImgWrap}>
+              {item.produto.urlImagem ? (
+                <Image source={{ uri: item.produto.urlImagem }} style={StyleSheet.absoluteFill} resizeMode="cover" />
+              ) : (
+                <Ionicons name="pizza-outline" size={26} color={colors.textMuted} />
+              )}
             </View>
-            <View className="flex-row items-center justify-between mt-3">
-              <View className="flex-row items-center gap-3">
-                <TouchableOpacity
-                  onPress={() => updateQuantity(index, item.quantidade - 1)}
-                  className="w-8 h-8 bg-dark-border rounded-full items-center justify-center"
-                >
-                  <Text className="text-offwhite font-bold">−</Text>
-                </TouchableOpacity>
-                <Text className="text-offwhite font-bold">{item.quantidade}</Text>
-                <TouchableOpacity
-                  onPress={() => updateQuantity(index, item.quantidade + 1)}
-                  className="w-8 h-8 bg-primary rounded-full items-center justify-center"
-                >
-                  <Text className="text-offwhite font-bold">+</Text>
+
+            <View style={s.itemBody}>
+              <View style={s.itemTopRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={s.itemName} numberOfLines={2}>{item.produto.nome}</Text>
+                  {item.tamanho && <Text style={s.itemMeta}>Tamanho: {item.tamanho.nome}</Text>}
+                  {item.borda && <Text style={s.itemMeta}>Borda: {item.borda.nome}</Text>}
+                </View>
+                <TouchableOpacity onPress={() => removeItem(index)} hitSlop={8} activeOpacity={0.7}>
+                  <Ionicons name="close-circle" size={22} color={colors.danger} />
                 </TouchableOpacity>
               </View>
-              <Text className="text-offwhite font-bold">
-                {formatCurrency(item.precoUnitario * item.quantidade)}
-              </Text>
+
+              <View style={s.itemBottomRow}>
+                <View style={s.qtyRow}>
+                  <TouchableOpacity
+                    onPress={() => updateQuantity(index, item.quantidade - 1)}
+                    style={[s.qtyBtn, { backgroundColor: colors.bgInput }]}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={s.qtyBtnText}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={s.qtyNum}>{item.quantidade}</Text>
+                  <TouchableOpacity
+                    onPress={() => updateQuantity(index, item.quantidade + 1)}
+                    style={[s.qtyBtn, { backgroundColor: colors.primary }]}
+                    activeOpacity={0.75}
+                  >
+                    <Text style={[s.qtyBtnText, { color: '#F4EDE1' }]}>+</Text>
+                  </TouchableOpacity>
+                </View>
+                <Text style={s.itemTotal}>{formatCurrency(item.precoUnitario * item.quantidade)}</Text>
+              </View>
             </View>
           </View>
         ))}
 
-        <View className="bg-dark-card rounded-2xl p-4 mb-3">
-          <Text className="text-offwhite font-bold mb-3">Cupom de desconto</Text>
+        {/* Cupom */}
+        <View style={s.card}>
+          <Text style={s.cardTitle}>Cupom de desconto</Text>
           {cupom ? (
-            <View className="flex-row items-center justify-between bg-green-900/30 rounded-xl px-4 py-3">
+            <View style={s.couponApplied}>
               <View>
-                <Text className="text-success font-bold">{cupom.codigo}</Text>
-                <Text className="text-gray-400 text-xs">
+                <Text style={s.couponCode}>{cupom.codigo}</Text>
+                <Text style={s.couponDesc}>
                   {cupom.tipoDesconto === 'PERCENTUAL'
                     ? `${cupom.valorDesconto}% de desconto`
                     : `${formatCurrency(cupom.valorDesconto)} de desconto`}
                 </Text>
               </View>
-              <TouchableOpacity onPress={removeCoupon}>
-                <Text className="text-danger text-sm">Remover</Text>
+              <TouchableOpacity onPress={removeCoupon} activeOpacity={0.7}>
+                <Text style={s.couponRemove}>Remover</Text>
               </TouchableOpacity>
             </View>
           ) : (
-            <View className="flex-row gap-2">
+            <View style={s.couponRow}>
               <TextInput
-                className="flex-1 bg-dark border border-dark-border rounded-xl px-4 py-3 text-offwhite"
+                style={s.couponInput}
                 placeholder="Código do cupom"
-                placeholderTextColor="#6B7280"
+                placeholderTextColor={colors.textMuted}
                 autoCapitalize="characters"
                 value={codigoCupom}
                 onChangeText={setCodigoCupom}
@@ -159,27 +172,28 @@ export function CartScreen({ navigation }: Props) {
           )}
         </View>
 
-        <View className="bg-dark-card rounded-2xl p-4 mb-4">
-          <View className="flex-row justify-between mb-2">
-            <Text className="text-gray-400">Subtotal</Text>
-            <Text className="text-offwhite">{formatCurrency(subtotal)}</Text>
+        {/* Summary */}
+        <View style={s.card}>
+          <View style={s.summaryRow}>
+            <Text style={s.summaryLabel}>Subtotal</Text>
+            <Text style={s.summaryValue}>{formatCurrency(subtotal)}</Text>
           </View>
           {desconto > 0 && (
-            <View className="flex-row justify-between mb-2">
-              <Text className="text-success">Desconto</Text>
-              <Text className="text-success">−{formatCurrency(desconto)}</Text>
+            <View style={s.summaryRow}>
+              <Text style={[s.summaryLabel, { color: colors.success }]}>Desconto</Text>
+              <Text style={[s.summaryValue, { color: colors.success }]}>−{formatCurrency(desconto)}</Text>
             </View>
           )}
-          <View className="h-px bg-dark-border my-2" />
-          <View className="flex-row justify-between">
-            <Text className="text-offwhite font-bold text-lg">Total</Text>
-            <Text className="text-accent font-bold text-lg">{formatCurrency(total)}</Text>
+          <View style={s.divider} />
+          <View style={s.summaryRow}>
+            <Text style={s.totalLabel}>Total</Text>
+            <Text style={s.totalValue}>{formatCurrency(total)}</Text>
           </View>
         </View>
-        <View className="h-4" />
+        <View style={{ height: 16 }} />
       </ScrollView>
 
-      <View className="px-4 pb-8 pt-4 bg-dark border-t border-dark-border">
+      <View style={s.footer}>
         <Button
           title={`Fechar pedido — ${formatCurrency(total)}`}
           onPress={() => navigation.navigate('Checkout')}
@@ -188,4 +202,97 @@ export function CartScreen({ navigation }: Props) {
       </View>
     </View>
   );
+}
+
+function createStyles(c: AppColors) {
+  return StyleSheet.create({
+    root: { flex: 1 },
+    scroll: { flex: 1, paddingHorizontal: 16 },
+
+    empty: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 24 },
+    emptyTitle: { color: c.text, fontFamily: fontFamily.headingBold, fontSize: 20, marginBottom: 8 },
+    emptySub: { color: c.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: 14, textAlign: 'center', marginBottom: 24 },
+
+    itemCard: {
+      flexDirection: 'row',
+      backgroundColor: c.bgCard,
+      borderRadius: radius.md,
+      padding: 12,
+      marginTop: 14,
+      gap: 12,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    itemImgWrap: {
+      width: 64,
+      height: 64,
+      borderRadius: radius.sm,
+      backgroundColor: c.bgInput,
+      alignItems: 'center',
+      justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    itemBody: { flex: 1, justifyContent: 'space-between' },
+    itemTopRow: { flexDirection: 'row', alignItems: 'flex-start', gap: 8 },
+    itemName: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 15, lineHeight: 19 },
+    itemMeta: { color: c.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: 11, marginTop: 2 },
+    itemBottomRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 10 },
+    qtyRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+    qtyBtn: { width: 28, height: 28, borderRadius: radius.sm, alignItems: 'center', justifyContent: 'center' },
+    qtyBtnText: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 15 },
+    qtyNum: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 14, minWidth: 16, textAlign: 'center' },
+    itemTotal: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 15 },
+
+    card: {
+      backgroundColor: c.bgCard,
+      borderRadius: radius.md,
+      padding: 16,
+      marginTop: 14,
+      borderWidth: 1,
+      borderColor: c.border,
+    },
+    cardTitle: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 15, marginBottom: 12 },
+
+    couponApplied: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      backgroundColor: `${c.success}1F`,
+      borderRadius: radius.sm,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+    },
+    couponCode: { color: c.success, fontFamily: fontFamily.bodyBold, fontSize: 14 },
+    couponDesc: { color: c.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: 11, marginTop: 2 },
+    couponRemove: { color: c.danger, fontFamily: fontFamily.bodySemiBold, fontSize: 13 },
+    couponRow: { flexDirection: 'row', gap: 8 },
+    couponInput: {
+      flex: 1,
+      backgroundColor: c.bgInput,
+      borderWidth: 1,
+      borderColor: c.border,
+      borderRadius: radius.sm,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      color: c.text,
+      fontFamily: fontFamily.bodyRegular,
+      fontSize: 14,
+    },
+
+    summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+    summaryLabel: { color: c.textSecondary, fontFamily: fontFamily.bodyRegular, fontSize: 14 },
+    summaryValue: { color: c.text, fontFamily: fontFamily.bodyMedium, fontSize: 14 },
+    divider: { height: 1, backgroundColor: c.border, marginVertical: 8 },
+    totalLabel: { color: c.text, fontFamily: fontFamily.bodyBold, fontSize: 17 },
+    totalValue: { color: c.accent, fontFamily: fontFamily.headingBold, fontSize: 19 },
+
+    footer: {
+      paddingHorizontal: 16,
+      paddingTop: 14,
+      paddingBottom: 28,
+      backgroundColor: c.bg,
+      borderTopWidth: 1,
+      borderTopColor: c.border,
+    },
+  });
 }
